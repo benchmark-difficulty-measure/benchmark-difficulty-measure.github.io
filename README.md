@@ -4,7 +4,7 @@ Project website for the paper **Your Benchmark Is an Empirical Measure Over Diff
 (Yifan Sun\*, Naicheng Yu\*, Jiawen Gong\*, Jingyan Shen, Huan Zhang; \*equal contribution).
 
 - Website (after deployment): https://naicheng-yu.github.io/Benchfill-Website/
-- Code: https://github.com/naicheng-yu/Benchfill (to be made public)
+- Code: https://github.com/ASTRAL-Group/benchmark-difficulty-measure
 
 This is a plain static site with no build step. It runs from the repository root on GitHub Pages
 and uses relative paths only, so it works under the `/Benchfill-Website/` sub-path.
@@ -60,7 +60,11 @@ cd benchfill-website && python3 -m http.server 8000   # http://localhost:8000/
   shows only the benchmarks whose item-level data also reproduces Table 1 (AIME24, AIME25, AIME26,
   Gaokao2023en, IFEval). Table 2 and its chart show the paper's values for all eight.
 - **Displayed metrics** (tiles, tables, chart) always use the paper's reported values, never recomputed ones.
-- **Figures.** Rendered at 432 dpi directly from the vector paper PDF by `scripts/extract_figures.py`.
+- **Figures.** Rendered at 432 dpi directly from the vector paper PDF by `scripts/extract_figures.py`,
+  except Figures 6 and 7, which use the regenerated larger-font versions of the same plots
+  (`rebuttal_analysis/first_round/first_round_calibration_filtered.png` and
+  `rebuttal_analysis/multiround/multiround_target_deviation_selected.png` in the experiment workspace).
+  `extract_figures.py` leaves them untouched.
 - The measure-view schematic in the "Measure View" section is illustrative and labelled as such.
 
 To regenerate (PyMuPDF and NumPy required):
@@ -72,8 +76,7 @@ python scripts/extract_figures.py ../path/to/paper.pdf static/images
 
 ## Things to update at release
 
-- `index.html`: replace the grey **arXiv (soon)** and **Code (soon)** buttons with real links
-  (search for `TODO`), restore code links in the footer, gap-filling note, and Table 13 note, and
+- `index.html`: replace the grey **arXiv (soon)** button with the arXiv link (search for `TODO`) and
   update the BibTeX entry with arXiv metadata.
 - `static/pdf/benchfill_paper.pdf`: replace if the paper is revised.
 

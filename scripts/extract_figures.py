@@ -20,9 +20,9 @@ FIGURES = [
     ("fig1_teaser", 2, "Figure 1"),
     ("fig2_pipeline", 5, "Figure 2"),
     ("fig4_benchfill", 8, "Figure 4"),
-    ("fig6_first_round", 36, "Figure 6"),
-    ("fig7_multi_round", 36, "Figure 7"),
 ]
+# Figures 6 and 7 (fig6_first_round.png, fig7_multi_round.png) are NOT extracted from the PDF:
+# the site uses the regenerated larger-font versions of the same plots (see README).
 
 # Figure 5 panels (page 35): title text -> (column, row). Used as static fallbacks
 # in the explorer for benchmarks whose item-level difficulties are not bundled.
