@@ -16,7 +16,7 @@
   --gap-fill: rgba(63, 143, 79, 0.13);
   --gap-fill-strong: rgba(63, 143, 79, 0.22);
   --area: rgba(36, 87, 197, 0.12);
-  --star: #d43a2f;
+  --star: #c2610c;
   --hl: #fbdcdc;
   --maxw: 980px;
   --wide: 1140px;
@@ -202,6 +202,7 @@ select:hover { border-color: #9aa0a6; }
 .lg-dash { width: 20px; height: 0; border-top: 2px dashed #8a8f96; }
 .lg-area { width: 14px; height: 12px; background: var(--area); border: 1px solid rgba(36,87,197,.35); }
 .lg-gap { width: 14px; height: 12px; background: var(--gap-fill-strong); border: 1px solid rgba(63,143,79,.5); }
+.gapfill .lg-gap { background: rgba(95,99,104,.16); border-color: rgba(95,99,104,.45); }
 .lg-tick { width: 2px; height: 13px; background: #6b7f99; }
 .lg-star { font-style: normal; color: var(--star); font-size: 14px; line-height: 1; }
 .lg-new { width: 10px; height: 10px; background: var(--accent); transform: rotate(45deg); }

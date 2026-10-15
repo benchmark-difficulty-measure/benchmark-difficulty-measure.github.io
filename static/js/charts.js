@@ -6,7 +6,9 @@
   var el = window.BF.el, $ = window.BF.$, $$ = window.BF.$$;
   var DOMAINS = ["Math", "Coding", "Agentic Tasks", "Science", "Instruction Following", "Logic", "Medicine"];
   var COLORS = { ink: "#1d1d1f", ref: "#8a8f96", area: "rgba(36,87,197,0.13)", gap: "rgba(63,143,79,0.14)",
-    gapStrong: "rgba(63,143,79,0.24)", gapLine: "#3f8f4f", tick: "#6b7f99", accent: "#2457c5", base: "#c9741f", star: "#d43a2f" };
+    gapStrong: "rgba(63,143,79,0.24)", gapLine: "#3f8f4f", tick: "#6b7f99", accent: "#2457c5", base: "#c9741f", star: "#c2610c",
+    // before/after gap-filling widget: neutral gray gaps, orange target, blue BenchFill item
+    gfGap: "rgba(95,99,104,0.10)", gfGapStrong: "rgba(95,99,104,0.16)", gfLabel: "#3c4043" };
 
   function fmt(v, d) { return v.toFixed(d == null ? 3 : d); }
   function slug(name) { return name.toLowerCase().replace(/ /g, "-"); }
@@ -290,22 +292,22 @@
       gaps.forEach(function (gp) {
         var x0 = sx(gp.lo), x1 = sx(gp.hi), top = opts.bandTop;
         if (!after) {
-          el("rect", { x: x0, y: top, width: Math.max(1, x1 - x0), height: axY - top, fill: COLORS.gapStrong }, g);
+          el("rect", { x: x0, y: top, width: Math.max(1, x1 - x0), height: axY - top, fill: COLORS.gfGapStrong }, g);
         } else {
           var xi = sx(gp.inserted);
-          el("rect", { x: x0, y: top, width: Math.max(0.5, xi - x0), height: axY - top, fill: COLORS.gap }, g);
-          el("rect", { x: xi, y: top, width: Math.max(0.5, x1 - xi), height: axY - top, fill: COLORS.gap }, g);
+          el("rect", { x: x0, y: top, width: Math.max(0.5, xi - x0), height: axY - top, fill: COLORS.gfGap }, g);
+          el("rect", { x: xi, y: top, width: Math.max(0.5, x1 - xi), height: axY - top, fill: COLORS.gfGap }, g);
         }
-        if (opts.rankLabels) el("text", { x: (x0 + x1) / 2, y: top - 5, "text-anchor": "middle", "font-size": 11, "font-weight": 600, fill: "#2f6f3c" }, g, "#" + gp.rank);
+        if (opts.rankLabels) el("text", { x: (x0 + x1) / 2, y: top - 5, "text-anchor": "middle", "font-size": 11, "font-weight": 600, fill: COLORS.gfLabel }, g, "#" + gp.rank);
         // target star
         el("text", { x: sx(gp.target), y: opts.starY, "text-anchor": "middle", "font-size": opts.starSize, fill: COLORS.star, "aria-hidden": "true" }, g, "★");
         if (opts.widthLabels) {
           if (!after) {
-            el("text", { x: (x0 + x1) / 2, y: axY + 30, "text-anchor": "middle", "font-size": 10.5, fill: "#2f6f3c" }, g, fmt(gp.hi - gp.lo));
+            el("text", { x: (x0 + x1) / 2, y: axY + 30, "text-anchor": "middle", "font-size": 10.5, fill: COLORS.gfLabel }, g, fmt(gp.hi - gp.lo));
           } else {
             var xi2 = sx(gp.inserted);
-            el("text", { x: (x0 + xi2) / 2, y: axY + 30, "text-anchor": "middle", "font-size": 10.5, fill: "#2f6f3c" }, g, fmt(gp.inserted - gp.lo));
-            el("text", { x: (xi2 + x1) / 2, y: axY + 30, "text-anchor": "middle", "font-size": 10.5, fill: "#2f6f3c" }, g, fmt(gp.hi - gp.inserted));
+            el("text", { x: (x0 + xi2) / 2, y: axY + 30, "text-anchor": "middle", "font-size": 10.5, fill: COLORS.gfLabel }, g, fmt(gp.inserted - gp.lo));
+            el("text", { x: (xi2 + x1) / 2, y: axY + 30, "text-anchor": "middle", "font-size": 10.5, fill: COLORS.gfLabel }, g, fmt(gp.hi - gp.inserted));
           }
         }
       });
