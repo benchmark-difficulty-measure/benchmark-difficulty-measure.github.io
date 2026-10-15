@@ -165,7 +165,7 @@
     var mk = el("marker", { id: "sch-arrow", viewBox: "0 0 8 8", refX: "4", refY: "4", markerWidth: "6", markerHeight: "6", orient: "auto-start-reverse" }, defs);
     el("path", { d: "M0,0 L8,4 L0,8 z", fill: "#3c4043" }, mk);
 
-    el("rect", { x: sx(gapLo), y: YTOP - 6, width: sx(gapHi) - sx(gapLo), height: YAX - YTOP + 6, fill: "rgba(63,143,79,0.10)" }, svg);
+    el("rect", { x: sx(gapLo), y: YTOP - 6, width: sx(gapHi) - sx(gapLo), height: YAX - YTOP + 6, fill: "rgba(95,99,104,0.10)" }, svg);
     // axes
     el("line", { x1: X0, y1: YAX, x2: X1 + 8, y2: YAX, stroke: "#3c4043", "stroke-width": 1.2, "marker-end": "url(#sch-arrow)" }, svg);
     el("line", { x1: X0, y1: YAX, x2: X0, y2: YTOP - 12, stroke: "#3c4043", "stroke-width": 1.2, "marker-end": "url(#sch-arrow)" }, svg);
@@ -185,7 +185,8 @@
     });
     // mean line = S_B
     el("line", { x1: X0, y1: sy(mean), x2: X1, y2: sy(mean), stroke: "#1d1d1f", "stroke-dasharray": "4 3", "stroke-width": 1.1 }, svg);
-    mathText(svg, { x: X1, y: sy(mean) - 6, "text-anchor": "end", "font-size": 12, fill: "#1d1d1f" }, [["S", "i"], ["B", "sub"], ["(θ) = average stem height", ""]]);
+    el("text", { x: X1, y: sy(mean) - 20, "text-anchor": "end", "font-size": 11.5, "font-weight": 600, fill: "#1d1d1f" }, svg, "Benchmark score:");
+    el("text", { x: X1, y: sy(mean) - 6, "text-anchor": "end", "font-size": 11.5, fill: "#1d1d1f" }, svg, "mean sampled performance");
 
     // point masses below the axis
     var YM = 268;
@@ -197,8 +198,8 @@
     mathText(svg, { x: X0 - 8, y: YM - 4, "text-anchor": "end", "font-size": 13, fill: "#3c4043" }, [["ν", "i"], ["B", "sub"]]);
     el("text", { x: sx(0.18), y: YM + 18, "text-anchor": "middle", "font-size": 11, fill: "#5f6368" }, svg, "each item: mass 1/n");
     var gx0 = sx(gapLo) + 3, gx1 = sx(gapHi) - 3, gy = YM - 26;
-    el("path", { d: "M" + gx0 + "," + (gy + 5) + "V" + gy + "H" + gx1 + "V" + (gy + 5), fill: "none", stroke: "#3f8f4f", "stroke-width": 1.4 }, svg);
-    el("text", { x: (gx0 + gx1) / 2, y: gy - 5, "text-anchor": "middle", "font-size": 11.5, fill: "#2f6f3c", "font-weight": 600 }, svg, "largest gap: no mass");
+    el("path", { d: "M" + gx0 + "," + (gy + 5) + "V" + gy + "H" + gx1 + "V" + (gy + 5), fill: "none", stroke: "#5f6368", "stroke-width": 1.4 }, svg);
+    el("text", { x: (gx0 + gx1) / 2, y: gy - 5, "text-anchor": "middle", "font-size": 11.5, fill: "#3c4043", "font-weight": 600 }, svg, "largest gap: no mass");
   }
 
   /* ---------------- interactions ---------------- */

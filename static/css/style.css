@@ -204,7 +204,7 @@ select:hover { border-color: #9aa0a6; }
 .lg-gap { width: 14px; height: 12px; background: var(--gap-fill-strong); border: 1px solid rgba(63,143,79,.5); }
 .gapfill .lg-gap { background: rgba(95,99,104,.16); border-color: rgba(95,99,104,.45); }
 .lg-tick { width: 2px; height: 13px; background: #6b7f99; }
-.lg-star { font-style: normal; color: var(--star); font-size: 14px; line-height: 1; }
+.lg-star { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--star); vertical-align: -1px; }
 .lg-new { width: 10px; height: 10px; background: var(--accent); transform: rotate(45deg); }
 .lg-bar { width: 16px; height: 10px; border-radius: 2px; }
 .lg-bar.base { background: var(--baseline); }

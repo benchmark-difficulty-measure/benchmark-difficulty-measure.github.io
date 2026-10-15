@@ -299,8 +299,8 @@
           el("rect", { x: xi, y: top, width: Math.max(0.5, x1 - xi), height: axY - top, fill: COLORS.gfGap }, g);
         }
         if (opts.rankLabels) el("text", { x: (x0 + x1) / 2, y: top - 5, "text-anchor": "middle", "font-size": 11, "font-weight": 600, fill: COLORS.gfLabel }, g, "#" + gp.rank);
-        // target star
-        el("text", { x: sx(gp.target), y: opts.starY, "text-anchor": "middle", "font-size": opts.starSize, fill: COLORS.star, "aria-hidden": "true" }, g, "★");
+        // target midpoint
+        el("circle", { cx: sx(gp.target), cy: opts.starY - opts.starSize * 0.35, r: opts.starSize * 0.3, fill: COLORS.star, stroke: "#fff", "stroke-width": 1.2, "aria-hidden": "true" }, g);
         if (opts.widthLabels) {
           if (!after) {
             el("text", { x: (x0 + x1) / 2, y: axY + 30, "text-anchor": "middle", "font-size": 10.5, fill: COLORS.gfLabel }, g, fmt(gp.hi - gp.lo));
@@ -368,7 +368,7 @@
         card.appendChild(svg);
         var meta = document.createElement("p");
         meta.className = "gf-zoom-meta";
-        meta.innerHTML = "width " + fmt(w) + " &middot; target &#9733; " + fmt(gp.target) +
+        meta.innerHTML = "width " + fmt(w) + ' &middot; target <i class="lg-star"></i> ' + fmt(gp.target) +
           (after ? '<br><span style="color:' + COLORS.accent + '">BenchFill item ' + fmt(gp.inserted) + "</span> &middot; |&Delta;| = " + fmt(dev) : "<br>&nbsp;");
         card.appendChild(meta);
         zooms.appendChild(card);

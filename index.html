@@ -131,43 +131,36 @@
   <h2>A measure-based view of benchmarks</h2>
   <div class="measure-grid">
     <div class="defs">
-      <div class="def">
-        <p class="def-label">Difficulty</p>
-        <p>Each item \(x_i\) has a difficulty \(z_i\in[0,1]\); larger is harder.</p>
-      </div>
-      <div class="def">
-        <p class="def-label">Performance curve</p>
-        <p>\(s_\theta(z)\in[0,1]\) is model \(\theta\)'s expected performance on items of difficulty \(z\), e.g., pass@1.</p>
-      </div>
+      <p>Place every benchmark item on a difficulty axis from 0 (easiest) to 1 (hardest). A model \(\theta\) is then described by its performance curve \(s_\theta(z)\): its expected performance, e.g., pass@1, on items of difficulty \(z\).</p>
       <div class="def">
         <p class="def-label">Benchmark measure</p>
-        <p>A benchmark \(B=\{x_i\}_{i=1}^n\) induces \[\nu_B=\frac1n\sum_{i=1}^n\delta_{z_i}.\]</p>
+        <p>A benchmark \(B\) of \(n\) items with difficulties \(z_1,\dots,z_n\) puts equal mass \(1/n\) at each item: \[\nu_B=\frac1n\sum_{i=1}^n\delta_{z_i}.\]</p>
       </div>
       <div class="def">
         <p class="def-label">Score as an integral</p>
-        <p>The benchmark score is exactly an integral against \(\nu_B\): \[S_B(\theta)=\frac1n\sum_{i=1}^n s_\theta(z_i)=\int s_\theta(z)\,d\nu_B(z).\]</p>
+        <p>The usual average score is exactly an integral against this measure: \[S_B(\theta)=\frac1n\sum_{i=1}^n s_\theta(z_i)=\int s_\theta(z)\,d\nu_B(z).\]</p>
       </div>
     </div>
     <figure class="schematic" aria-labelledby="schematic-cap">
-      <svg id="measure-schematic" viewBox="0 0 420 296" role="img" aria-label="Schematic: a decreasing performance curve over normalized item difficulty from 0 to 1. Vertical stems at twelve item difficulties reach up to the curve; the benchmark score is the average stem height. Below the axis, point masses mark the items, leaving an empty interval labelled as the maximum gap."></svg>
+      <svg id="measure-schematic" viewBox="0 0 420 296" role="img" aria-label="Schematic: a decreasing performance curve over normalized item difficulty from 0 to 1. Vertical stems at twelve item difficulties reach up to the curve; the benchmark score, shown as a dashed line, is the mean sampled performance. Below the axis, point masses mark the items, leaving an empty interval labelled as the maximum gap."></svg>
       <figcaption id="schematic-cap"><span class="tag-illustrative">Schematic</span> The score averages the curve's height at the item difficulties (stems). Items are point masses of weight \(1/n\), and the interval between two adjacent items gets <em>no</em> weight.</figcaption>
     </figure>
   </div>
 
-  <p>For two models \(\theta,\theta'\) with difficulty-conditioned difference \(\Delta(z)=s_{\theta'}(z)-s_\theta(z)\), the benchmark reports \(D_B=\int\Delta\,d\nu_B\). A leaderboard comparison therefore <em>couples</em> two distinct objects: the models' difference \(\Delta\) and the benchmark's allocation of mass \(\nu_B\). Under a target distribution \(\mu\in\mathcal P([0,1])\) that encodes the intended evaluation objective, the quantity we actually want is \(D_\mu=\int\Delta\,d\mu\).</p>
+  <p>Comparing two models works the same way: the benchmark reports \(D_B=\int\Delta\,d\nu_B\), where \(\Delta(z)=s_{\theta'}(z)-s_\theta(z)\) is their performance difference, so a leaderboard gap depends both on how the models differ <em>and</em> on where the benchmark places its items. What we actually want is \(D_\mu=\int\Delta\,d\mu\) under a target distribution \(\mu\) over difficulty that encodes the intended evaluation objective.</p>
 
   <h3>Two diagnostic metrics</h3>
   <div class="metric-cards">
     <div class="metric-card mismatch">
       <p class="metric-name">Difficulty Distribution Mismatch</p>
-      <div class="eq-block">\[\begin{aligned}\mathrm{DDM}(B;\mu)&:=W_1(\nu_B,\mu)\\&\,=\inf_{\pi\in\Pi(\nu_B,\mu)}\int_{[0,1]^2}|u-v|\,d\pi(u,v)\end{aligned}\]</div>
-      <p>How much mass must be moved, and how far, to turn the benchmark's difficulty distribution into the target one. Here \(\Pi(\nu_B,\mu)\) is the set of couplings of \(\nu_B\) and \(\mu\).</p>
-      <p class="impl"><b>As computed in the paper.</b> With item difficulties min-max normalized to \([0,1]\) and no prior information, DDM is measured against a <em>same-size empirical uniform reference</em> with points at the equal-width bin midpoints \((i-\tfrac12)/n\). In one dimension this is the \(L_1\) distance between the two ECDFs: \(\mathrm{DDM}=\frac1n\sum_{i=1}^n\bigl|z_{(i)}-\tfrac{i-1/2}{n}\bigr|\).</p>
+      <div class="eq-block">\[\mathrm{DDM}(B;\mu):=W_1(\nu_B,\mu)\]</div>
+      <p>The 1-Wasserstein distance: how much mass must be moved, and how far, to turn the benchmark's difficulty distribution into the target one.</p>
+      <p class="impl"><b>As computed in the paper.</b> With difficulties min-max normalized and no prior information, DDM is measured against a <em>same-size empirical uniform reference</em> with points at \((i-\tfrac12)/n\). In one dimension, DDM then reduces to \(\frac1n\sum_{i}\bigl|z_{(i)}-\tfrac{i-1/2}{n}\bigr|\) over the sorted difficulties \(z_{(i)}\).</p>
     </div>
     <div class="metric-card gap">
       <p class="metric-name">Maximum Gap</p>
-      <div class="eq-block">\[G(B):=\max_{0\le j\le n}\bigl(z_{(j+1)}-z_{(j)}\bigr),\quad z_{(0)}:=0,\;z_{(n+1)}:=1\]</div>
-      <p>The length of the largest interval on the difficulty axis that contains no benchmark item, where \(z_{(1)}\le\dots\le z_{(n)}\) are the sorted difficulties and the boundary intervals at 0 and 1 are included.</p>
+      <div class="eq-block">\[G(B):=\max_{0\le j\le n}\bigl(z_{(j+1)}-z_{(j)}\bigr)\]</div>
+      <p>The length of the largest interval on the difficulty axis that contains no benchmark item, counting the intervals next to 0 and 1 (\(z_{(0)}:=0\), \(z_{(n+1)}:=1\)).</p>
       <p class="impl"><b>Also reported.</b> The <em>Top-5 Gap Sum</em>, the sum of the five largest such gaps, shows whether coverage problems extend beyond a single interval.</p>
     </div>
   </div>
@@ -176,17 +169,17 @@
   <div class="theorems">
     <article class="theorem">
       <p class="theorem-title"><span>Theorem 2.1</span> Mismatch controls score distortion and rank stability</p>
-      <p>If the performance difference \(\Delta\) is \(L\)-Lipschitz, then \(\bigl|D_B(\theta',\theta)-D_\mu(\theta',\theta)\bigr|\le L\,W_1(\nu_B,\mu)\). Consequently, if \(|D_\mu(\theta',\theta)|>L\,W_1(\nu_B,\mu)\), then \(\operatorname{sign}D_B=\operatorname{sign}D_\mu\): the benchmark ordering agrees with the target ordering and no rank flip can occur.</p>
+      <p>If \(\Delta\) is \(L\)-Lipschitz, then \(|D_B-D_\mu|\le L\,W_1(\nu_B,\mu)\). So whenever \(|D_\mu|>L\,W_1(\nu_B,\mu)\), the benchmark orders the two models the same way as the target: no rank flip can occur.</p>
       <p class="theorem-note">A small DDM means the benchmark faithfully approximates the target evaluation; a large one means it may over- or under-weight difficulty regions. The paper (App.&nbsp;B.1) also extends this to the finite-sample setting.</p>
     </article>
     <article class="theorem">
       <p class="theorem-title"><span>Theorem 2.2</span> Uniform target as the unique maximin choice</p>
-      <p>Suppose nothing is known about <em>where</em> along the difficulty axis two models differ: \(\Delta\) ranges over \(\mathcal F_\rho=\{\Delta:[0,1]\to[-1,1]\ \text{measurable}:\int_0^1\Delta(z)\,dz=\rho\}\), \(\rho\in(-1,1)\). Then the worst-case retained difference \(V_\rho(\mu):=\inf_{\Delta\in\mathcal F_\rho}\int\Delta\,d\mu\) satisfies \(\sup_{\mu}V_\rho(\mu)=\rho\), with the uniform distribution \(\lambda=\mathrm{Unif}[0,1]\) as the unique maximizer.</p>
+      <p>Suppose nothing is known about <em>where</em> along the difficulty axis two models differ: \(\Delta\) takes values in \([-1,1]\), and only its average over \([0,1]\) is fixed at some \(\rho\in(-1,1)\). Then the best achievable worst-case retained difference, \(\sup_\mu\inf_\Delta\int\Delta\,d\mu\), equals \(\rho\), and the uniform distribution \(\mathrm{Unif}[0,1]\) is the unique target that attains it.</p>
       <p class="theorem-note"><b>This does not claim that the uniform distribution is universally optimal.</b> When prior information about the intended evaluation objective is available, \(\mu\) should reflect it. Uniform is a principled, neutral default for the agnostic setting, one that privileges no difficulty region a priori.</p>
     </article>
     <article class="theorem">
       <p class="theorem-title"><span>Theorem 2.3</span> Maximum gap as an exact asymptotic minimax detection boundary</p>
-      <p>Fix a test level \(\alpha\in(0,1)\) and \(a\in(0,1]\). Test \(H_0: s_-=s_+\) against \(H_1\): there is an interval \(I\subset[0,1]\) with \(|I|=w\) on which \(s_+(z)-s_-(z)\ge a\), using level-\(\alpha\) tests based on \(k\) repeated samples per benchmark item. Let \(\Pi^*_\alpha(B;w,a,k)\) be the minimax worst-case power.</p>
+      <p>Let \(s_-\) and \(s_+\) be a model&rsquo;s performance curves before and after an improvement. Test &ldquo;no change&rdquo; (\(s_+=s_-\)) against &ldquo;\(s_+\) exceeds \(s_-\) by at least \(a\in(0,1]\) on some difficulty interval of width \(w\),&rdquo; using level-\(\alpha\) tests (\(\alpha\in(0,1)\)) with \(k\) repeated samples per item, and let \(\Pi^*_\alpha(B;w,a,k)\) be the minimax worst-case power.</p>
       <ol class="theorem-list">
         <li>If \(w\le G(B)\), then \(\Pi^*_\alpha(B;w,a,k)=\alpha\) for every \(k\in\mathbb N\).</li>
         <li>If \(w>G(B)\), then \(\lim_{k\to\infty}\Pi^*_\alpha(B;w,a,k)=1\).</li>
@@ -300,7 +293,7 @@
   </div>
 
   <h3 id="gapfill-viz">Before and after: filling the three largest gaps</h3>
-  <p>The strip shows one benchmark's items (ticks) on the normalized difficulty axis. Switch to <i>After</i> to insert the three items that BenchFill actually selected: each lands near the midpoint (&#9733;) of a previously empty interval and splits it in two.</p>
+  <p>The strip shows one benchmark's items (ticks) on the normalized difficulty axis. Switch to <i>After</i> to insert the three items that BenchFill actually selected: each lands near the midpoint (orange circle) of a previously empty interval and splits it in two.</p>
   <div class="gapfill" id="gapfill-app">
     <div class="controls">
       <label class="select-wrap"><span class="ctl-label">Benchmark</span>
@@ -315,7 +308,7 @@
     <div class="legend">
       <span><i class="lg-tick"></i>Original items</span>
       <span><i class="lg-gap"></i>Top-3 gaps</span>
-      <span><i class="lg-star">&#9733;</i>Target midpoint</span>
+      <span><i class="lg-star"></i>Target midpoint</span>
       <span><i class="lg-new"></i>BenchFill item</span>
     </div>
     <svg id="gf-strip" role="img" aria-label="Normalized item difficulties on the 0 to 1 axis with the three largest gaps highlighted"></svg>
