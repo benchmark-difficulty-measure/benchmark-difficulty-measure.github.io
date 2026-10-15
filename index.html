@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your Benchmark Is an Empirical Measure Over Difficulty</title>
+<meta name="description" content="A benchmark induces an empirical measure over item difficulty. We formalize two failure modes, measure mismatch and coverage gaps, diagnose 25 LLM benchmarks, and introduce BenchFill, a difficulty-targeted item rewriting algorithm that fills coverage gaps.">
+<meta name="author" content="Yifan Sun, Naicheng Yu, Jiawen Gong, Jingyan Shen, Huan Zhang">
+<meta name="keywords" content="LLM evaluation, benchmark, item difficulty, item response theory, Wasserstein distance, coverage gap, BenchFill">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#ffffff">
+<link rel="canonical" href="https://naicheng-yu.github.io/Benchfill-Website/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="BenchFill">
+<meta property="og:title" content="Your Benchmark Is an Empirical Measure Over Difficulty">
+<meta property="og:description" content="Measure mismatch and coverage gaps: two failure modes of benchmark evaluation, a diagnosis of 25 LLM benchmarks, and BenchFill for difficulty-targeted gap filling.">
+<meta property="og:url" content="https://naicheng-yu.github.io/Benchfill-Website/">
+<meta property="og:image" content="https://naicheng-yu.github.io/Benchfill-Website/static/images/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Two benchmark failure cases: measure mismatch and coverage gaps.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Your Benchmark Is an Empirical Measure Over Difficulty">
+<meta name="twitter:description" content="Measure mismatch and coverage gaps: two failure modes of benchmark evaluation, a diagnosis of 25 LLM benchmarks, and BenchFill for difficulty-targeted gap filling.">
+<meta name="twitter:image" content="https://naicheng-yu.github.io/Benchfill-Website/static/images/og-image.png">
+
+<link rel="icon" href="./static/images/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="./static/images/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="./static/images/apple-touch-icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Noto+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
+<link rel="stylesheet" href="./static/css/style.css">
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"></script>
+<script defer src="./static/data/benchmarks.js"></script>
+<script defer src="./static/data/gapfill.js"></script>
+<script defer src="./static/js/main.js"></script>
+<script defer src="./static/js/charts.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<nav class="nav" aria-label="Sections"><div class="inner">
+  <a class="nav-brand" href="#top">BenchFill</a>
+  <div class="nav-links">
+    <a href="#tldr">TL;DR</a>
+    <a href="#measure">Measure View</a>
+    <a href="#diagnosis">Diagnosis</a>
+    <a href="#explorer">Explorer</a>
+    <a href="#benchfill">BenchFill</a>
+    <a href="#results">Results</a>
+    <a href="#more">More</a>
+    <a href="#bibtex">BibTeX</a>
+  </div>
+</div></nav>
+
+<header class="hero wrap" id="top">
+  <h1>Your Benchmark Is an Empirical Measure<br class="title-break"> Over Difficulty</h1>
+  <p class="authors">
+    <span class="author-entry">Yifan Sun<sup>1*</sup>,</span>
+    <span class="author-entry">Naicheng Yu<sup>2*</sup>,</span>
+    <span class="author-entry">Jiawen Gong<sup>1*</sup>,</span>
+    <span class="author-entry">Jingyan Shen<sup>3</sup>,</span>
+    <span class="author-entry">Huan Zhang<sup>1</sup></span>
+  </p>
+  <p class="affils">
+    <span><sup>1</sup>University of Illinois Urbana-Champaign</span>
+    <span><sup>2</sup>University of California San Diego</span>
+    <span><sup>3</sup>New York University</span>
+  </p>
+  <p class="note"><sup>*</sup>Equal contribution &nbsp;&middot;&nbsp; Correspondence: <a href="mailto:yifan50@illinois.edu">Yifan Sun</a> and <a href="mailto:huan@huan-zhang.com">Huan Zhang</a></p>
+  <div class="btn-row">
+    <a class="btn" href="./static/pdf/benchfill_paper.pdf" target="_blank" rel="noopener" title="Read the paper (PDF)">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm0 2.5L17.5 8H14zM8 12h8v1.6H8zm0 3.5h8v1.6H8z"/></svg>Paper</a>
+    <!-- TODO: replace with the arXiv abstract URL once the arXiv ID is available. -->
+    <span class="btn btn-soon" role="link" aria-disabled="true" title="arXiv version coming soon">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm2.2 4 3.3 5-3.3 5h2.4l2.1-3.3 2.1 3.3h2.4l-3.3-5 3.3-5h-2.4l-2.1 3.3L9.6 7z"/></svg>arXiv <span class="soon-tag">soon</span></span>
+    <!-- TODO: restore the link to https://github.com/naicheng-yu/Benchfill once the code repository is public. -->
+    <span class="btn btn-soon" role="link" aria-disabled="true" title="Code release coming soon">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>Code <span class="soon-tag">soon</span></span>
+    <a class="btn" href="#bibtex" title="Jump to citation">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm1.5 9.5v1.7h9v-1.7zm0 3.6v1.7h6v-1.7z"/></svg>BibTeX</a>
+  </div>
+</header>
+
+<main class="wrap" id="main">
+
+<p class="lead">Benchmark evaluation looks simple: run models on a set of questions and average the results. But the conclusion depends not only on how well models perform, but also on <em>how the benchmark's questions are distributed</em>. Does a benchmark faithfully measure the model differences and training improvements we actually care about?</p>
+
+<figure class="teaser-figure wide">
+  <a class="zoomable" href="./static/images/fig1_teaser.png" data-caption="Figure 1: Two benchmark failure cases.">
+    <img class="teaser-full" src="./static/images/fig1_teaser.png" width="2413" height="816" alt="Figure 1. Left, measure mismatch: Models A and B are tied on easy questions but separate on hard ones. The benchmark distribution concentrates on easy questions, so benchmark scores are 72.1 versus 72.4 (indistinguishable), whereas a distribution of interest weighted toward harder questions gives target scores 61.8 versus 68.9 (a clear difference). Right, coverage gaps: after training, a model improves substantially in a local difficulty region that contains no benchmark questions, so the observed benchmark score only moves from 64.2 to 64.6 and the true training progress is missed.">
+  </a>
+  <div class="teaser-split">
+    <img src="./static/images/fig1_teaser_a.png" width="1293" height="816" loading="lazy" alt="Figure 1(a), measure mismatch: Models A and B are tied on easy questions and separate on hard ones. Benchmark scores A = 72.1, B = 72.4 are indistinguishable, while target scores under the distribution of interest are A = 61.8, B = 68.9.">
+    <img src="./static/images/fig1_teaser_b.png" width="1102" height="816" loading="lazy" alt="Figure 1(b), coverage gaps: a substantial local improvement falls in a difficulty interval with no benchmark questions, so the benchmark score moves only from 64.2 to 64.6.">
+  </div>
+  <figcaption><b>Two benchmark failure cases.</b> In both panels, the curves show true model conditional performance as a function of question difficulty. <b>(a) Measure Mismatch.</b> The benchmark emphasizes easy questions, where the models perform similarly, while the difficulty distribution we care about places more weight on harder questions, where they differ substantially. Because the benchmark and the target distribution weight the difficulty axis differently, they lead to different conclusions for the same two models. <b>(b) Coverage Gaps.</b> A model actually improves substantially over a localized difficulty region. Because the benchmark has no questions in that region, this improvement is not reflected in the observed benchmark score, causing meaningful training progress to be missed. <span class="fig-src">(Paper, Figure 1)</span></figcaption>
+</figure>
+
+<p>We organize benchmark questions along a difficulty axis and treat the benchmark itself as a distribution: each question contributes equal evaluation mass at its difficulty level, so <b>a benchmark is an empirical measure over difficulty</b>. This turns the two failure cases above into precise, analyzable problems about the benchmark-induced measure:</p>
+
+<div class="duo">
+  <div class="duo-card">
+    <p class="duo-title"><span class="dot dot-mismatch" aria-hidden="true"></span>Measure mismatch</p>
+    <p>The benchmark distributes its mass differently from the <em>target</em> difficulty distribution that represents the intended evaluation objective, so benchmark conclusions can differ from conclusions under the target, and in severe cases flip a ranking.</p>
+  </div>
+  <div class="duo-card">
+    <p class="duo-title"><span class="dot dot-gap" aria-hidden="true"></span>Coverage gaps</p>
+    <p>A benchmark is supported on finitely many difficulty points, so whole intervals of difficulty may contain no items. A substantial gain concentrated in such an interval can leave the benchmark score almost unchanged.</p>
+  </div>
+</div>
+
+<!-- ============================== TL;DR ============================== -->
+<section class="section" id="tldr">
+  <h2>TL;DR</h2>
+  <div class="tldr"><ol>
+    <li><b>Benchmarks are measures.</b> Averaging a model's results over <span class="nowrap">\(n\)</span> items is exactly integrating its difficulty-conditioned performance against the empirical measure \(\nu_B=\frac1n\sum_i \delta_{z_i}\).</li>
+    <li><b>Measure mismatch can distort model comparisons.</b> We quantify it by the 1-Wasserstein distance between the benchmark measure and a target distribution, the <em>Difficulty Distribution Mismatch</em> (DDM), which bounds the score distortion (for Lipschitz performance differences) and gives a condition under which no rank flip can occur.</li>
+    <li><b>Coverage gaps can hide localized improvements.</b> The <em>Maximum Gap</em> between adjacent difficulties is an exact asymptotic minimax detection boundary: in the worst case, an improvement confined to an interval no wider than it is undetectable, however many times the benchmark is re-run. Across <b>25 benchmarks in 7 domains</b>, 10 have DDM&nbsp;&ge;&nbsp;0.10, 8 have Max&nbsp;Gap&nbsp;&ge;&nbsp;0.10, and 10 have Top-5 Gap Sum&nbsp;&ge;&nbsp;0.30.</li>
+    <li><b>BenchFill fills the gaps.</b> Difficulty-targeted LLM rewriting with online IRT calibration. Inserting only three items per benchmark reduces the sum of the three largest gaps by <b>32.67%</b> on average, versus 17.52% for a budget-matched baseline and 35.06% for an idealized oracle reference.</li>
+  </ol></div>
+</section>
+
+<!-- ============================== MEASURE VIEW ============================== -->
+<section class="section" id="measure">
+  <h2>A measure-based view of benchmarks</h2>
+  <div class="measure-grid">
+    <div class="defs">
+      <div class="def">
+        <p class="def-label">Difficulty</p>
+        <p>Each item \(x_i\) has a difficulty \(z_i\in[0,1]\); larger is harder.</p>
+      </div>
+      <div class="def">
+        <p class="def-label">Performance curve</p>
+        <p>\(s_\theta(z)\in[0,1]\) is model \(\theta\)'s expected performance on items of difficulty \(z\), e.g., pass@1.</p>
+      </div>
+      <div class="def">
+        <p class="def-label">Benchmark measure</p>
+        <p>A benchmark \(B=\{x_i\}_{i=1}^n\) induces \[\nu_B=\frac1n\sum_{i=1}^n\delta_{z_i}.\]</p>
+      </div>
+      <div class="def">
+        <p class="def-label">Score as an integral</p>
+        <p>The benchmark score is exactly an integral against \(\nu_B\): \[S_B(\theta)=\frac1n\sum_{i=1}^n s_\theta(z_i)=\int s_\theta(z)\,d\nu_B(z).\]</p>
+      </div>
+    </div>
+    <figure class="schematic" aria-labelledby="schematic-cap">
+      <svg id="measure-schematic" viewBox="0 0 420 296" role="img" aria-label="Schematic: a decreasing performance curve over difficulty from 0 to 1. Vertical stems at twelve item difficulties reach up to the curve; the benchmark score is the average stem height. Below the axis, point masses mark the items, leaving an empty interval labelled as the maximum gap."></svg>
+      <figcaption id="schematic-cap"><span class="tag-illustrative">Schematic</span> The score averages the curve's height at the item difficulties (stems). Items are point masses of weight \(1/n\), and the interval between two adjacent items gets <em>no</em> weight.</figcaption>
+    </figure>
+  </div>
+
+  <p>For two models \(\theta,\theta'\) with difficulty-conditioned difference \(\Delta(z)=s_{\theta'}(z)-s_\theta(z)\), the benchmark reports \(D_B=\int\Delta\,d\nu_B\). A leaderboard comparison therefore <em>couples</em> two distinct objects: the models' difference \(\Delta\) and the benchmark's allocation of mass \(\nu_B\). Under a target distribution \(\mu\in\mathcal P([0,1])\) that encodes the intended evaluation objective, the quantity we actually want is \(D_\mu=\int\Delta\,d\mu\).</p>
+
+  <h3>Two diagnostic metrics</h3>
+  <div class="metric-cards">
+    <div class="metric-card mismatch">
+      <p class="metric-name">Difficulty Distribution Mismatch</p>
+      <div class="eq-block">\[\begin{aligned}\mathrm{DDM}(B;\mu)&:=W_1(\nu_B,\mu)\\&\,=\inf_{\pi\in\Pi(\nu_B,\mu)}\int_{[0,1]^2}|u-v|\,d\pi(u,v)\end{aligned}\]</div>
+      <p>How much mass must be moved, and how far, to turn the benchmark's difficulty distribution into the target one. Here \(\Pi(\nu_B,\mu)\) is the set of couplings of \(\nu_B\) and \(\mu\).</p>
+      <p class="impl"><b>As computed in the paper.</b> With item difficulties min-max normalized to \([0,1]\) and no prior information, DDM is measured against a <em>same-size empirical uniform reference</em> with points at the equal-width bin midpoints \((i-\tfrac12)/n\). In one dimension this is the \(L_1\) distance between the two ECDFs: \(\mathrm{DDM}=\frac1n\sum_{i=1}^n\bigl|z_{(i)}-\tfrac{i-1/2}{n}\bigr|\).</p>
+    </div>
+    <div class="metric-card gap">
+      <p class="metric-name">Maximum Gap</p>
+      <div class="eq-block">\[G(B):=\max_{0\le j\le n}\bigl(z_{(j+1)}-z_{(j)}\bigr),\quad z_{(0)}:=0,\;z_{(n+1)}:=1\]</div>
+      <p>The length of the largest interval on the difficulty axis that contains no benchmark item, where \(z_{(1)}\le\dots\le z_{(n)}\) are the sorted difficulties and the boundary intervals at 0 and 1 are included.</p>
+      <p class="impl"><b>Also reported.</b> The <em>Top-5 Gap Sum</em>, the sum of the five largest such gaps, shows whether coverage problems extend beyond a single interval.</p>
+    </div>
+  </div>
+
+  <h3>What the theory guarantees</h3>
+  <div class="theorems">
+    <article class="theorem">
+      <p class="theorem-title"><span>Theorem 2.1</span> Mismatch controls score distortion and rank stability</p>
+      <p>If the performance difference \(\Delta\) is \(L\)-Lipschitz, then \(\bigl|D_B(\theta',\theta)-D_\mu(\theta',\theta)\bigr|\le L\,W_1(\nu_B,\mu)\). Consequently, if \(|D_\mu(\theta',\theta)|>L\,W_1(\nu_B,\mu)\), then \(\operatorname{sign}D_B=\operatorname{sign}D_\mu\): the benchmark ordering agrees with the target ordering and no rank flip can occur.</p>
+      <p class="theorem-note">A small DDM means the benchmark faithfully approximates the target evaluation; a large one means it may over- or under-weight difficulty regions. The paper (App.&nbsp;B.1) also extends this to the finite-sample setting.</p>
+    </article>
+    <article class="theorem">
+      <p class="theorem-title"><span>Theorem 2.2</span> Uniform target as the unique maximin choice</p>
+      <p>Suppose nothing is known about <em>where</em> along the difficulty axis two models differ: \(\Delta\) ranges over \(\mathcal F_\rho=\{\Delta:[0,1]\to[-1,1]\ \text{measurable}:\int_0^1\Delta(z)\,dz=\rho\}\), \(\rho\in(-1,1)\). Then the worst-case retained difference \(V_\rho(\mu):=\inf_{\Delta\in\mathcal F_\rho}\int\Delta\,d\mu\) satisfies \(\sup_{\mu}V_\rho(\mu)=\rho\), with the uniform distribution \(\lambda=\mathrm{Unif}[0,1]\) as the unique maximizer.</p>
+      <p class="theorem-note"><b>This does not claim that the uniform distribution is universally optimal.</b> When prior information about the intended evaluation objective is available, \(\mu\) should reflect it. Uniform is a principled, neutral default for the agnostic setting, one that privileges no difficulty region a priori.</p>
+    </article>
+    <article class="theorem">
+      <p class="theorem-title"><span>Theorem 2.3</span> Maximum gap as an exact asymptotic minimax detection boundary</p>
+      <p>Fix a test level \(\alpha\in(0,1)\) and \(a\in(0,1]\). Test \(H_0: s_-=s_+\) against \(H_1\): there is an interval \(I\subset[0,1]\) with \(|I|=w\) on which \(s_+(z)-s_-(z)\ge a\), using level-\(\alpha\) tests based on \(k\) repeated samples per benchmark item. Let \(\Pi^*_\alpha(B;w,a,k)\) be the minimax worst-case power.</p>
+      <ol class="theorem-list">
+        <li>If \(w\le G(B)\), then \(\Pi^*_\alpha(B;w,a,k)=\alpha\) for every \(k\in\mathbb N\).</li>
+        <li>If \(w>G(B)\), then \(\lim_{k\to\infty}\Pi^*_\alpha(B;w,a,k)=1\).</li>
+      </ol>
+      <p class="theorem-note">This is a sharp detectability phase transition. An improvement no wider than the maximum gap can be completely invisible to the benchmark in the worst case, regardless of how many repeated evaluations are run. Once it is wider, repeated evaluation eventually makes it detectable.</p>
+    </article>
+  </div>
+</section>
+
+<!-- ============================== DIAGNOSIS ============================== -->
+<section class="section" id="diagnosis">
+  <h2>Diagnosing 25 popular benchmarks</h2>
+  <p>We analyze 25 widely used benchmarks spanning math, coding, agentic tasks, science, instruction following, logic, and medicine. Item difficulty is relative to model ability, so rather than using raw failure rates we estimate it with <b>Item Response Theory (IRT)</b>. In the one-parameter logistic (1PL) model, model \(j\) solves item \(i\) with probability \(\Pr(Y_{ij}=1)=\sigma(\theta_j-b_i)\), where \(\theta_j\) is the model's ability and \(b_i\) the item's difficulty. Multiple-choice benchmarks add a chance-level guessing parameter.</p>
+  <figure>
+    <a class="zoomable" href="./static/images/fig2_pipeline.png" data-caption="Figure 2: Difficulty estimation and metric calculation pipeline.">
+      <img src="./static/images/fig2_pipeline.png" width="2412" height="835" loading="lazy" alt="Figure 2. Pipeline in four panels: (1) collect a response matrix of empirical success rates of N LLMs on M items with k rollouts per item; (2) diagnose the response matrix with model and item information and inversion rates; (3) fit a 1PL IRT model P(Y_ij = 1) = sigma(theta_j - b_i) and check R-hat, minimum bulk ESS, divergent transitions, and leave-one-out stability; (4) compute the Wasserstein distance between the benchmark and uniform ECDFs and the maximum gap between sorted normalized difficulties.">
+    </a>
+    <figcaption><b>Overview of our benchmark difficulty estimation and metric calculation pipeline.</b> We collect empirical success rates from multiple LLMs on benchmark items, diagnose the response matrix, fit a 1PL IRT model to estimate item difficulties, perform post-fit IRT diagnostics, and compute two metrics over the normalized difficulty distribution. <span class="fig-src">(Paper, Figure 2)</span></figcaption>
+  </figure>
+  <ul class="facts">
+    <li><b>Model panel.</b> For non-agentic benchmarks, 12 LLMs from 1.7B to 397B parameters, stratified across the Text Arena leaderboard, each with up to 32 rollouts per item. Agentic benchmarks use HAL results for 15&ndash;66 frontier closed-source LLMs.</li>
+    <li><b>Fitting and diagnostics.</b> Bayesian inference via MCMC. All benchmarks pass all 7 checks: 4 on the response matrix before fitting, plus \(\hat R\), effective sample size, and divergent transitions after fitting. A leave-one-out analysis supports the stability of the 12-model panel.</li>
+    <li><b>Metrics.</b> Difficulties are normalized to \([0,1]\). DDM uses the same-size uniform reference described above, and gap metrics include the endpoint gaps.</li>
+  </ul>
+
+  <div class="stat-row" role="list">
+    <div class="stat" role="listitem"><p class="stat-num">25</p><p class="stat-label">benchmarks across 7 domains</p></div>
+    <div class="stat" role="listitem"><p class="stat-num">10<span>/25</span></p><p class="stat-label">have DDM &ge; 0.10</p></div>
+    <div class="stat" role="listitem"><p class="stat-num">8<span>/25</span></p><p class="stat-label">have Max Gap &ge; 0.10</p></div>
+    <div class="stat" role="listitem"><p class="stat-num">10<span>/25</span></p><p class="stat-label">have Top-5 Gap Sum &ge; 0.30</p></div>
+  </div>
+
+  <h3 id="explorer">Interactive difficulty distribution explorer</h3>
+  <p>Pick a benchmark to see the ECDF of its normalized item difficulties against the same-size uniform reference. The area between the two curves equals DDM, and the green bands mark the five largest adjacent gaps.</p>
+  <div class="explorer" id="explorer-app">
+    <div class="controls">
+      <label class="select-wrap"><span class="ctl-label">Benchmark</span>
+        <select id="ex-select" aria-describedby="ex-note"></select>
+      </label>
+      <div class="toggles" role="group" aria-label="Chart layers">
+        <label><input type="checkbox" id="ex-area" checked> DDM area</label>
+        <label><input type="checkbox" id="ex-gaps" checked> Top-5 gaps</label>
+        <label><input type="checkbox" id="ex-rug" checked> Item rug</label>
+      </div>
+    </div>
+    <div class="metric-tiles" id="ex-metrics" aria-live="polite"></div>
+    <div class="legend" id="ex-legend">
+      <span><i class="lg-line"></i>Benchmark ECDF</span>
+      <span><i class="lg-dash"></i>Uniform reference (same size)</span>
+      <span><i class="lg-area"></i>Area = DDM</span>
+      <span><i class="lg-gap"></i>Top-5 gaps (width labelled)</span>
+    </div>
+    <div class="chart-box">
+      <svg id="ex-chart" role="img" aria-labelledby="ex-chart-title"><title id="ex-chart-title">ECDF of normalized item difficulty</title></svg>
+      <div class="tooltip" id="ex-tip" hidden></div>
+      <figure class="static-panel" id="ex-static" hidden>
+        <img id="ex-static-img" alt="">
+        <figcaption id="ex-static-cap"></figcaption>
+      </figure>
+    </div>
+    <p class="explorer-note" id="ex-note"></p>
+  </div>
+
+  <details class="table-details" id="table1-details" open>
+    <summary>Table 1: All 25 benchmarks</summary>
+    <div class="table-scroll">
+      <table class="data-table" id="table1">
+        <caption><b>Table 1: Summary of proposed metrics across benchmarks.</b> DDM denotes the 1-Wasserstein distance between the benchmark empirical difficulty distribution and a same-size empirical uniform distribution on [0,&nbsp;1]. Max Gap is the largest gap between consecutive normalized difficulties, and Top-5 Sum is the sum of the five largest such gaps. # denotes the number of benchmark items. Lower is better for all three metrics. Highlighted entries mark comparatively large values for each metric: DDM &ge;&nbsp;0.10, Max Gap &ge;&nbsp;0.10, or Top-5 Sum &ge;&nbsp;0.30. <i>(Click a row to open it in the explorer.)</i></caption>
+        <thead><tr><th scope="col">Benchmark</th><th scope="col">Domain</th><th scope="col" class="num">DDM</th><th scope="col" class="num">Max Gap</th><th scope="col" class="num">Top-5 Sum</th><th scope="col" class="num">#</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </details>
+
+  <div class="takeaway">
+    <p><b>Several benchmarks deviate strongly from the neutral uniform target.</b> Their aggregate scores are more sensitive to over-represented difficulty regions and less sensitive to under-represented ones. Non-uniformity is <em>not</em> inherently a problem when it matches the intended evaluation objective. But when no such objective is specified, high-DDM leaderboard results reflect the benchmark's own difficulty weighting rather than a difficulty-neutral comparison, so users should check whether that weighting matches their use case.</p>
+    <p><b>Many benchmarks have large local coverage gaps.</b> A training run may make meaningful progress inside an uncovered region while the aggregate score barely moves. AIME24 and AIME25, for example, have Top-5 Gap Sums close to 0.5 despite their widespread use for monitoring RLVR training. And this is not only a small-benchmark artifact: HumanEval (164 items) and BBH-5 objects (250 items) also show substantial gap metrics.</p>
+  </div>
+
+  <details class="more-details">
+    <summary>How reliable are these estimates?</summary>
+    <p>Recomputing the metrics on each posterior draw of the IRT difficulties (paper App.&nbsp;C.6) shows that DDM is stable: its posterior standard deviation is typically about 0.011 (range 0.006&ndash;0.020), roughly 8&ndash;12% of the point estimate in typical cases. Max Gap is an extreme-order statistic and carries more uncertainty (posterior SD 0.017&ndash;0.041), but the qualitative conclusion holds. Across benchmarks, the posterior probability that the observed Max Gap exceeds a same-size uniform-sampling baseline has median 0.999, with a median observed-to-baseline ratio of 3.85&times;. The paper also compares 1PL against 2PL and multidimensional IRT models (App.&nbsp;C.5).</p>
+  </details>
+</section>
+
+<!-- ============================== BENCHFILL ============================== -->
+<section class="section" id="benchfill">
+  <h2>BenchFill: difficulty-targeted gap filling</h2>
+  <p>Diagnosis suggests an action: put new items where the benchmark has none. Given an adjacent gap \([z_L,z_R]\) between two benchmark items, the goal is a <em>valid</em> new item whose difficulty is as close as possible to the midpoint \(z^\star=(z_L+z_R)/2\), the location that most reduces the gap with a single insertion. The new item is <b>added</b> to the benchmark and replaces nothing. Rather than asking experts to write items at a target difficulty, BenchFill uses an LLM to <em>rewrite</em> existing items. Existing items serve as local difficulty references and keep the benchmark's format and style.</p>
+  <figure class="wide">
+    <a class="zoomable" href="./static/images/fig4_benchfill.png" data-caption="Figure 4: Overview of BenchFill.">
+      <img src="./static/images/fig4_benchfill.png" width="2413" height="787" loading="lazy" alt="Figure 4. BenchFill overview. 1. Rewrite: an LLM rewrites each parent item, a dice-product counting problem, into several child variants. 2. Annotate: each child goes through (a) a validity check, (b) response collection, and (c) online calibration to obtain an item difficulty. 3. Update memory: annotated items are added to a memory along the difficulty axis; the parents closest to the target difficulty inside the gap become rewriting seeds, and nearby lower and higher items form a reference list for the next round.">
+    </a>
+    <figcaption><b>Overview of BenchFill.</b> BenchFill iteratively rewrites parent items into child variants, annotates their difficulties, and updates the memory to guide the next round of gap filling. <span class="fig-src">(Paper, Figure 4)</span></figcaption>
+  </figure>
+
+  <ol class="steps">
+    <li><span class="step-k">Target</span><p>Select a large uncovered interval and set the target \(z^\star\) to its midpoint. Memory \(\mathcal M\) starts with the existing items closest to the gap.</p></li>
+    <li><span class="step-k">Retrieve</span><p>Take the parents in \(\mathcal M\) whose annotated difficulties are closest to \(z^\star\), plus a reference list of nearby item&ndash;difficulty pairs below and above the target.</p></li>
+    <li><span class="step-k">Rewrite</span><p>The rewriter LLM turns each parent into a batch of children, conditioned on the parent, the target, and the references, while preserving the benchmark's format.</p></li>
+    <li><span class="step-k">Validate</span><p>A validity judge checks that each child's reference answer is correct. Invalid children are discarded.</p></li>
+    <li><span class="step-k">Calibrate</span><p>Evaluate the fixed model panel on each valid child and place it on the original IRT scale with online calibration (below).</p></li>
+    <li><span class="step-k">Update</span><p>Add the annotated children to \(\mathcal M\). Children closer to \(z^\star\) are more likely to become the next round's parents and references.</p></li>
+    <li><span class="step-k">Select</span><p>After at most \(T\) rounds, or once within tolerance, choose the valid child minimizing \(|\hat z-z^\star|\). Human experts review it before insertion.</p></li>
+  </ol>
+
+  <div class="calib">
+    <p><b>Online IRT calibration.</b> With abilities \(\hat\theta_j\) pre-estimated on the original benchmark, model \(j\) answers a rewritten item \(x\) correctly \(c_j\) times out of \(K_j\) trials. Only the new item's parameter is fit:</p>
+    <div class="eq-block">\[\hat b(x)=\arg\max_b\sum_{j=1}^m\Bigl[c_j\log\sigma(\hat\theta_j-b)+(K_j-c_j)\log\bigl(1-\sigma(\hat\theta_j-b)\bigr)\Bigr]\]</div>
+    <p>This places each rewritten item on the same scale as the original benchmark without refitting the full model. Multiple-choice benchmarks keep the original guessing parameter.</p>
+  </div>
+
+  <h3 id="gapfill-viz">Before and after: filling the three largest gaps</h3>
+  <p>The strip shows one benchmark's items (ticks) on the normalized difficulty axis. Switch to <i>After</i> to insert the three items that BenchFill actually selected: each lands near the midpoint (&#9733;) of a previously empty interval and splits it in two.</p>
+  <div class="gapfill" id="gapfill-app">
+    <div class="controls">
+      <label class="select-wrap"><span class="ctl-label">Benchmark</span>
+        <select id="gf-select"></select>
+      </label>
+      <div class="segmented" role="radiogroup" aria-label="Benchmark state">
+        <button type="button" role="radio" aria-checked="true" data-state="before">Before</button>
+        <button type="button" role="radio" aria-checked="false" data-state="after">After BenchFill</button>
+      </div>
+    </div>
+    <div class="gf-summary" id="gf-summary" aria-live="polite"></div>
+    <div class="legend">
+      <span><i class="lg-tick"></i>Original items</span>
+      <span><i class="lg-gap"></i>Top-3 gaps</span>
+      <span><i class="lg-star">&#9733;</i>Target midpoint</span>
+      <span><i class="lg-new"></i>BenchFill item</span>
+    </div>
+    <svg id="gf-strip" role="img" aria-label="Item difficulties on the 0 to 1 axis with the three largest gaps highlighted"></svg>
+    <div class="gf-zooms" id="gf-zooms"></div>
+    <p class="explorer-note">Shown for the five benchmarks whose item-level difficulty estimates match the paper's Table 1 (AIME24, AIME25, AIME26, Gaokao2023en, IFEval); results for all eight benchmarks are in Table 2 below. The before/after Top-3 Gap Sum reduction equals the BenchFill column of Table 2. Difficulties are IRT estimates on the normalized [0,1] scale, not ground truth.</p>
+  </div>
+</section>
+
+<!-- ============================== RESULTS ============================== -->
+<section class="section" id="results">
+  <h2>Results</h2>
+  <p>We fill gaps in 8 representative benchmarks from different domains, targeting the three most pronounced gaps in each and inserting one item per gap. The rewriter is MiniMax-M2.7 (temperature 1.0). The search runs for at most 8 rounds, each with 4 parents &times; 4 children and a reference list of at most 16 nearby item&ndash;difficulty pairs, and stops early once an item is within 0.01 of the target. The <b>baseline</b> is a budget-matched best-of-N rewriter with uniformly sampled parents: it has the same rewrite budget and the same final selection rule, but no difficulty-aware retrieval, reference lists, or memory.</p>
+
+  <div class="stat-row" role="list">
+    <div class="stat accent" role="listitem"><p class="stat-num">32.67%</p><p class="stat-label">average Top-3 Gap Sum reduction with BenchFill</p></div>
+    <div class="stat" role="listitem"><p class="stat-num">17.52%</p><p class="stat-label">budget-matched baseline</p></div>
+    <div class="stat" role="listitem"><p class="stat-num">35.06%</p><p class="stat-label">idealized oracle reference (not a method)</p></div>
+    <div class="stat" role="listitem"><p class="stat-num">0.005</p><p class="stat-label">average target deviation (baseline: 0.048)</p></div>
+  </div>
+
+  <figure class="chart-figure">
+    <div class="legend" id="bar-legend">
+      <span><i class="lg-bar base"></i>Baseline (budget-matched)</span>
+      <span><i class="lg-bar bf"></i>BenchFill</span>
+      <span><i class="lg-oracle"></i>Oracle (idealized upper bound)</span>
+    </div>
+    <div class="chart-box">
+      <svg id="bar-chart" role="img" aria-label="Horizontal bar chart of Top-3 Gap Sum Reduction for eight benchmarks and their average; values are listed in the table below."></svg>
+      <div class="tooltip" id="bar-tip" hidden></div>
+    </div>
+    <figcaption><b>Top-3 Gap Sum Reduction (%) from Table 2</b> (higher is better). The oracle is not a gap-filling method: it inserts an item <em>exactly</em> at each target difficulty, giving a reference upper bound for three insertions.</figcaption>
+  </figure>
+
+  <details class="table-details">
+    <summary>Table 2: Per-benchmark gap-filling results</summary>
+    <div class="table-scroll">
+      <table class="data-table" id="table2">
+        <caption><b>Table 2: Gap-filling results.</b> Top-3 Gap Sum Reduction reports the relative reduction (%) from the original benchmark, where larger is better. Target Dev. is the mean absolute deviation between the selected item difficulty and the target difficulty over three filled gaps, where lower is better. Baseline uses a budget-matched best-of-N uniform-parent rewriting strategy. Oracle is an idealized upper bound that inserts an item exactly at each target difficulty, rather than an actual gap-filling method.</caption>
+        <thead>
+          <tr><th rowspan="2" scope="col">Benchmark</th><th colspan="3" scope="colgroup" class="num grp">Top-3 Gap Sum Reduction (%) &uarr;</th><th colspan="2" scope="colgroup" class="num grp">Target Dev. &darr;</th></tr>
+          <tr><th scope="col" class="num">Baseline</th><th scope="col" class="num">BenchFill</th><th scope="col" class="num">Oracle</th><th scope="col" class="num">Baseline</th><th scope="col" class="num">BenchFill</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </details>
+
+  <div class="takeaway">
+    <p><b>Takeaway.</b> With only three inserted items per benchmark, BenchFill reduces the Top-3 Gap Sum by 21.09%&ndash;38.88%, nearly double the budget-matched baseline on average, and close to the oracle reference. On AIME24, AIME25, and AIME26 it matches the oracle's reduction. Its Target Dev. stays below 0.01 on every benchmark, so the rewrite-and-annotate search produces items close to the intended difficulty. All 24 selected items passed the automated validity check (GPT-5.4) and then human expert review without modification or replacement.</p>
+  </div>
+
+  <h3>Does filling gaps help detect localized improvements?</h3>
+  <p>Reducing a gap metric is only useful if it makes the benchmark more sensitive. For one target gap in each of AIME24, AIME25, and AIME26, we apply mild SFT so that a model improves around that gap region. We then compare three variants that differ by a single item: <i>Original</i> (30 items), <i>Original + BenchFill</i>, and <i>Original + Baseline</i>. Each item is evaluated with 32 rollouts before and after SFT, and a one-sided stratified randomization test (100,000 permutations) checks whether the gain is detectable at \(p&lt;0.05\).</p>
+  <div class="detect-summary" role="list">
+    <div class="detect" role="listitem"><p class="detect-num">0/3</p><p>Original benchmark</p></div>
+    <div class="detect" role="listitem"><p class="detect-num">0/3</p><p>Original + Baseline item</p></div>
+    <div class="detect good" role="listitem"><p class="detect-num">3/3</p><p>Original + BenchFill item</p></div>
+  </div>
+  <div class="table-scroll">
+    <table class="data-table" id="table12">
+      <caption><b>Table 12: Localized-improvement detection results.</b> Each augmentation method adds one item to the original 30-item benchmark. Gain denotes the change in average accuracy. The one-sided stratified randomization test randomly reassigns rollout outcomes between the pre- and post-SFT conditions within each item using 100,000 permutations. Boldface indicates variants for which a positive gain is detected at <i>p</i>&nbsp;&lt;&nbsp;0.05.</caption>
+      <thead><tr><th scope="col">Case</th><th scope="col">Benchmark variant</th><th scope="col" class="num">Gain</th><th scope="col" class="num">One-sided <i>p</i></th><th scope="col" class="num">Detected</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <p class="small-note">The scope is three targeted cases, one gap in each of AIME24/25/26 and one model per case. In these cases, the improvement that the original and baseline-augmented benchmarks missed becomes detectable once BenchFill places an item in the improved region.</p>
+
+  <h3>Representative generated items</h3>
+  <p>Each pair shows an original benchmark item (the ancestor) and the final item BenchFill selected from its lineage, with the main change highlighted. Difficulties are normalized to [0,1], and the target is in parentheses. Rewrites can move difficulty in either direction.</p>
+  <div class="examples">
+    <article class="example">
+      <header><span class="ex-bench">AMC23</span><span class="ex-move up">0.535 &rarr; 0.597</span></header>
+      <div class="ex-pair">
+        <div class="ex-item"><p class="ex-label">Original ancestor <span class="ex-diff">0.535</span></p>
+          <p>For how many integers \(n\) does the expression \(\displaystyle\sqrt{\frac{\log(n^2)-(\log n)^2}{\log n-\htmlClass{hl}{3}}}\) represent a real number, where \(\log\) denotes the base-10 logarithm?</p></div>
+        <div class="ex-item new"><p class="ex-label">BenchFill item <span class="ex-diff">0.597 <span class="ex-target">(0.598)</span></span></p>
+          <p>Find the number of integer values of \(n\) such that \(\displaystyle\sqrt{\frac{\log(n^2)-(\log n)^2}{\log n-\htmlClass{hl}{1}}}\) represents a real number, where \(\log\) denotes the base-10 logarithm.</p></div>
+      </div>
+    </article>
+    <article class="example">
+      <header><span class="ex-bench">Gaokao2023en</span><span class="ex-move up">0.864 &rarr; 0.886</span></header>
+      <div class="ex-pair">
+        <div class="ex-item"><p class="ex-label">Original ancestor <span class="ex-diff">0.864</span></p>
+          <p>On an <mark>\(8\times8\) chessboard</mark>, <mark>6 black rooks</mark> and \(k\) white rooks are placed on different cells so that each rook only attacks rooks of the opposite color. Compute the maximum possible value of \(k\). (Two rooks attack each other if they are in the same row or column and no rooks are between them.)</p></div>
+        <div class="ex-item new"><p class="ex-label">BenchFill item <span class="ex-diff">0.886 <span class="ex-target">(0.885)</span></span></p>
+          <p>On a <mark>\(9\times9\) chessboard</mark>, <mark>7 black rooks</mark> and \(k\) white rooks are placed on distinct squares so that each rook attacks only rooks of the opposite color. What is the maximum possible value of \(k\)? (Two rooks attack each other if they are in the same row or column and there is no rook between them.)</p></div>
+      </div>
+    </article>
+    <article class="example">
+      <header><span class="ex-bench">AIME25</span><span class="ex-move down">0.750 &rarr; 0.674</span></header>
+      <div class="ex-pair">
+        <div class="ex-item"><p class="ex-label">Original ancestor <span class="ex-diff">0.750</span></p>
+          <p>Alex divides a disk into <mark>four quadrants</mark> with two perpendicular diameters intersecting at the center of the disk. He draws <mark>25 more line segments</mark> through the disk, each connecting two points at random on the perimeter in <mark>different quadrants</mark>. Find the expected number of regions into which these 27 line segments divide the disk.</p></div>
+        <div class="ex-item new"><p class="ex-label">BenchFill item <span class="ex-diff">0.674 <span class="ex-target">(0.671)</span></span></p>
+          <p>A circle has a diameter drawn, splitting it into <mark>two semicircular regions</mark>. Then <mark>8 chords</mark> are drawn, each connecting a random point on the boundary in <mark>one semicircle</mark> to a random point on the boundary in <mark>the other semicircle</mark>. Assuming all points are chosen uniformly and independently, what is the expected number of regions into which the interior of the circle is divided?</p></div>
+      </div>
+    </article>
+  </div>
+  <p class="small-note">Item text as shown in the paper's Table 13. All 24 gap-filling items, with answers, parents, targets, and annotated difficulties, will be released with the code.</p>
+</section>
+
+<!-- ============================== MORE ============================== -->
+<section class="section" id="more">
+  <h2>Additional findings</h2>
+
+  <h3>Does the rewriter perceive difficulty?</h3>
+  <p>Before any feedback, in the first generation round, higher specified targets already produce higher mean annotated difficulty within most benchmarks. The search-and-annotate loop then further reduces the target deviation over rounds, and in most cases the children concentrate around the target.</p>
+  <div class="tabs" data-tabs>
+    <div class="tab-list" role="tablist" aria-label="Rewriter difficulty figures">
+      <button type="button" role="tab" id="tab-fig6" aria-controls="panel-fig6" aria-selected="true">First-round alignment</button>
+      <button type="button" role="tab" id="tab-fig7" aria-controls="panel-fig7" aria-selected="false" tabindex="-1">Multi-round alignment</button>
+    </div>
+    <figure class="tab-panel" role="tabpanel" id="panel-fig6" aria-labelledby="tab-fig6">
+      <a class="zoomable" href="./static/images/fig6_first_round.png" data-caption="Figure 6: First-round alignment of specified target difficulty and annotated difficulty.">
+        <img src="./static/images/fig6_first_round.png" width="2413" height="1277" loading="lazy" alt="Figure 6. Eight panels, one per benchmark, plotting the annotated difficulty of valid first-round children against the specified target difficulty on a 0 to 10 scale, with per-target mean and standard deviation and a dashed diagonal for perfect alignment.">
+      </a>
+      <figcaption><b>First-round alignment of specified target difficulty and annotated difficulty.</b> Each panel corresponds to one benchmark. The horizontal axis shows the specified target difficulty, and the vertical axis shows the annotated difficulty of valid first-round children. Blue points denote individual generated children, and red markers denote the mean and standard deviation for each target difficulty. The dashed diagonal indicates perfect alignment. For readability, both axes are shown on a 0&ndash;10 scale, corresponding to normalized difficulties in [0,&nbsp;1] multiplied by 10. Within most benchmarks, higher specified targets produce higher annotated difficulties already in the first round, before any iterative feedback is incorporated. <span class="fig-src">(Paper, Figure 6)</span></figcaption>
+    </figure>
+    <figure class="tab-panel" role="tabpanel" id="panel-fig7" aria-labelledby="tab-fig7" hidden>
+      <a class="zoomable" href="./static/images/fig7_multi_round.png" data-caption="Figure 7: Multi-round target alignment during BenchFill search.">
+        <img src="./static/images/fig7_multi_round.png" width="2412" height="1136" loading="lazy" alt="Figure 7. Eight panels, one representative gap-filling case per benchmark, plotting the absolute target deviation of generated children against generation round, with round-level mean and standard deviation; the mean deviation generally decreases across rounds.">
+      </a>
+      <figcaption><b>Multi-round target alignment during BenchFill search.</b> Each panel shows one representative gap-filling case from a different benchmark. The horizontal axis denotes the generation round, and the vertical axis denotes the absolute target deviation, \(|\hat z-z^\star|\), for generated children. Blue points denote individual generated children, and red markers denote the round-level mean and standard deviation. Across most cases, the mean target deviation decreases over rounds, and the generated children become more concentrated around the target, showing that the search-and-annotate loop further improves target alignment beyond the rewriter&rsquo;s initial difficulty sensitivity. <span class="fig-src">(Paper, Figure 7)</span></figcaption>
+    </figure>
+  </div>
+
+  <h3>Benchmark calibration by quantile-matching pruning</h3>
+  <p>The measure-mismatch view also suggests <em>re-weighting</em> a benchmark toward a chosen target. A simple greedy algorithm (paper App.&nbsp;D) keeps \(k\) items by matching target quantiles \(q_t=Q_\mu\bigl((t-\tfrac12)/k\bigr)\) to the closest unused item. On 8 math benchmarks, we calibrate each one toward the uniform target and measure how well its model ranking agrees with a leave-one-out reference ranking aggregated from the other seven.</p>
+  <div class="calib-stats" role="list">
+    <div class="cstat" role="listitem"><p class="cstat-name">Spearman &uarr;</p><p class="cstat-val">0.890 <span>&rarr;</span> <b>0.930</b></p></div>
+    <div class="cstat" role="listitem"><p class="cstat-name">Kendall &uarr;</p><p class="cstat-val">0.802 <span>&rarr;</span> <b>0.848</b></p></div>
+    <div class="cstat" role="listitem"><p class="cstat-name">\(W_1(\nu,\mathrm{Unif})\) &darr;</p><p class="cstat-val">0.096 <span>&rarr;</span> <b>0.028</b></p></div>
+  </div>
+  <p class="small-note">Averages over the 8 benchmarks, full benchmark &rarr; calibrated subset. Random pruning to the same size (30 trials) gives 0.895 Spearman, 0.801 Kendall, and 0.109 \(W_1\), so the gain does not come from simply using fewer items. Uniform calibration is used here as a neutral debiasing strategy; it does not assume the reference distribution is exactly uniform.</p>
+  <details class="table-details">
+    <summary>Table 11: Per-benchmark calibration results</summary>
+    <div class="table-scroll">
+      <table class="data-table" id="table11">
+        <caption><b>Table 11: Benchmark calibration results on eight math benchmarks.</b> For each source benchmark, Full denotes the original benchmark, Random denotes the average over 30 random pruned subsets of the same size, and Cal. denotes the calibrated subset produced by our quantile-matching benchmark calibration algorithm. Spearman and Kendall measure agreement with the leave-one-out reference ranking. We report \(W_1(\nu,\mathrm{Unif})\) as a mechanism metric to verify that calibration moves the selected benchmark measure closer to the neutral uniform distribution. Bold values indicate the best result among Full, Random, and Cal. for each benchmark and metric.</caption>
+        <thead>
+          <tr><th rowspan="2" scope="col">Benchmark</th><th colspan="3" scope="colgroup" class="num grp">Spearman &uarr;</th><th colspan="3" scope="colgroup" class="num grp">Kendall &uarr;</th><th colspan="3" scope="colgroup" class="num grp">\(W_1(\nu,\mathrm{Unif})\) &darr;</th></tr>
+          <tr><th class="num">Full</th><th class="num">Random</th><th class="num">Cal.</th><th class="num">Full</th><th class="num">Random</th><th class="num">Cal.</th><th class="num">Full</th><th class="num">Random</th><th class="num">Cal.</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </details>
+
+  <h3>Limitations and outlook</h3>
+  <p>The framework is primarily <em>post hoc</em>: given an existing benchmark, we estimate its difficulty distribution, diagnose mismatch and coverage gaps, and reduce pronounced gaps by targeted insertion. A natural next step is difficulty-aware benchmark <em>construction</em>, which would design the induced difficulty measure from the start to match the intended evaluation objective while keeping high local resolution along the difficulty axis.</p>
+</section>
+
+<!-- ============================== BIBTEX ============================== -->
+<section class="section" id="bibtex">
+  <h2>BibTeX</h2>
+  <div class="bibtex">
+    <button class="copy-btn" type="button" id="copy-bibtex" aria-label="Copy BibTeX to clipboard">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h9a2 2 0 0 1 2 2v11h-2V5H8zM5 7h9a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2zm0 2v11h9V9z"/></svg><span>Copy</span></button>
+<pre id="bibtex-src">@misc{sun2026benchmark,
+  title  = {Your Benchmark Is an Empirical Measure Over Difficulty},
+  author = {Sun, Yifan and Yu, Naicheng and Gong, Jiawen and Shen, Jingyan and Zhang, Huan},
+  year   = {2026},
+  note   = {Preprint}
+}</pre>
+  </div>
+  <p class="small-note">Preprint citation. It will be updated with arXiv metadata once available.</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <p class="footer-title">Your Benchmark Is an Empirical Measure Over Difficulty</p>
+    <p class="footer-links"><a href="./static/pdf/benchfill_paper.pdf" target="_blank" rel="noopener">Paper</a><span aria-hidden="true">&middot;</span><span>Code (coming soon)</span><span aria-hidden="true">&middot;</span><a href="#bibtex">BibTeX</a></p>
+    <p>Correspondence: <a href="mailto:yifan50@illinois.edu">yifan50@illinois.edu</a>, <a href="mailto:huan@huan-zhang.com">huan@huan-zhang.com</a></p>
+    <p class="footer-credit">Page layout inspired by the <a href="https://agent-tts.github.io/agent-tts/" target="_blank" rel="noopener">Agent-TTS</a> project page.</p>
+  </div>
+</footer>
+
+<div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Enlarged figure">
+  <button type="button" class="lightbox-close" aria-label="Close enlarged figure">&times;</button>
+  <img alt="">
+  <p class="lightbox-cap"></p>
+</div>
+</body>
+</html>
