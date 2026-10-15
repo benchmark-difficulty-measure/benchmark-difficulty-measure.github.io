@@ -172,7 +172,7 @@
     mathText(svg, { x: X0 + 8, y: YTOP - 6, "font-size": 13, fill: "#3c4043" }, [["s", "i"], ["θ", "sub"], ["(", ""], ["z", "i"], [")", ""]]);
     el("text", { x: X0, y: YAX + 15, "text-anchor": "middle", "font-size": 11, fill: "#5f6368" }, svg, "0");
     el("text", { x: X1, y: YAX + 15, "text-anchor": "middle", "font-size": 11, fill: "#5f6368" }, svg, "1");
-    el("text", { x: (X0 + X1) / 2, y: YAX + 15, "text-anchor": "middle", "font-size": 11.5, fill: "#3c4043" }, svg, "difficulty");
+    el("text", { x: (X0 + X1) / 2, y: YAX + 15, "text-anchor": "middle", "font-size": 11.5, fill: "#3c4043" }, svg, "Normalized Item Difficulty");
 
     // curve
     var d = "";

@@ -124,7 +124,7 @@
         staticFig.hidden = false;
         staticImg.src = "./static/images/fig5/" + slug(b.name) + ".png";
         staticImg.alt = "Paper Figure 5 panel for " + b.name + ": ECDF of normalized item difficulty (black) against the uniform reference (gray dashed), with the five largest gaps shaded.";
-        staticCap.innerHTML = "<b>" + b.name + "</b>, panel from the paper's Figure 5. Horizontal axis: normalized item difficulty (0&ndash;1); vertical axis: ECDF (0&ndash;1). Black: benchmark ECDF; gray dashed: uniform reference; colored bands: five largest gaps.";
+        staticCap.innerHTML = "<b>" + b.name + "</b>, panel from the paper's Figure 5. Horizontal axis: Normalized Item Difficulty; vertical axis: ECDF (0&ndash;1). Black: benchmark ECDF; gray dashed: uniform reference; colored bands: five largest gaps.";
         note.innerHTML = "Item-level difficulty estimates for " + b.name + " are not bundled with this page, so the explorer shows the paper's static panel. Metrics above are from Table 1.";
         return;
       }
@@ -202,7 +202,7 @@
         el("text", { x: sx(v), y: m.t + ph + 30, "text-anchor": "middle" }, ax, v.toFixed(1));
         el("text", { x: m.l - 7, y: sy(v) + 4, "text-anchor": "end" }, ax, v.toFixed(1));
       });
-      el("text", { class: "ax-title", x: m.l + pw / 2, y: H - 8, "text-anchor": "middle" }, svg, "Normalized item difficulty");
+      el("text", { class: "ax-title", x: m.l + pw / 2, y: H - 8, "text-anchor": "middle" }, svg, "Normalized Item Difficulty");
       el("text", { class: "ax-title", x: 12, y: m.t + ph / 2, "text-anchor": "middle", transform: "rotate(-90 12 " + (m.t + ph / 2) + ")" }, svg, "ECDF");
 
       if (optRug.checked) {
@@ -227,7 +227,7 @@
         dotG.setAttribute("cx", sx(x)); dotG.setAttribute("cy", sy(G));
         var inGap = null;
         gaps.forEach(function (g) { if (x >= g.lo && x <= g.hi && g.w > 0) inGap = g; });
-        var html = '<span class="tt-k">difficulty</span> <b>' + fmt(x, 3) + '</b><br><span class="tt-k">benchmark ECDF</span> <b>' + fmt(F, 3) +
+        var html = '<span class="tt-k">normalized item difficulty</span> <b>' + fmt(x, 3) + '</b><br><span class="tt-k">benchmark ECDF</span> <b>' + fmt(F, 3) +
           '</b><br><span class="tt-k">uniform reference</span> <b>' + fmt(G, 3) + "</b>";
         if (inGap) html += '<br><span style="color:#2f6f3c">gap #' + inGap.rank + ": [" + fmt(inGap.lo) + ", " + fmt(inGap.hi) + "], width <b>" + fmt(inGap.w) + "</b></span>";
         tip.innerHTML = html;
@@ -328,6 +328,7 @@
           el("text", { x: sx(v), y: axY + 16, "text-anchor": "middle", "font-size": 10.5, fill: "#5f6368" }, svg, opts.tickFmt(v));
         });
       }
+      if (opts.axisTitle) el("text", { class: "ax-title", x: W / 2, y: axY + 36, "text-anchor": "middle" }, svg, opts.axisTitle);
       return sx;
     }
 
@@ -346,8 +347,9 @@
 
       var W = width;
       drawAxisStrip(strip, W, 0, 1, b.items, gaps, after, {
-        H: 104, axY: 64, bandTop: 22, starY: 38, starSize: 15, tickH: 18, tickW: 1, diamond: 5,
-        rankLabels: true, widthLabels: false, ticks: [0, 0.2, 0.4, 0.6, 0.8, 1], tickFmt: function (v) { return v.toFixed(1); }
+        H: 112, axY: 64, bandTop: 22, starY: 38, starSize: 15, tickH: 18, tickW: 1, diamond: 5,
+        rankLabels: true, widthLabels: false, ticks: [0, 0.2, 0.4, 0.6, 0.8, 1], tickFmt: function (v) { return v.toFixed(1); },
+        axisTitle: "Normalized Item Difficulty"
       });
 
       clear(zooms);

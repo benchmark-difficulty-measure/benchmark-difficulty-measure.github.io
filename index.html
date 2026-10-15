@@ -150,7 +150,7 @@
       </div>
     </div>
     <figure class="schematic" aria-labelledby="schematic-cap">
-      <svg id="measure-schematic" viewBox="0 0 420 296" role="img" aria-label="Schematic: a decreasing performance curve over difficulty from 0 to 1. Vertical stems at twelve item difficulties reach up to the curve; the benchmark score is the average stem height. Below the axis, point masses mark the items, leaving an empty interval labelled as the maximum gap."></svg>
+      <svg id="measure-schematic" viewBox="0 0 420 296" role="img" aria-label="Schematic: a decreasing performance curve over normalized item difficulty from 0 to 1. Vertical stems at twelve item difficulties reach up to the curve; the benchmark score is the average stem height. Below the axis, point masses mark the items, leaving an empty interval labelled as the maximum gap."></svg>
       <figcaption id="schematic-cap"><span class="tag-illustrative">Schematic</span> The score averages the curve's height at the item difficulties (stems). Items are point masses of weight \(1/n\), and the interval between two adjacent items gets <em>no</em> weight.</figcaption>
     </figure>
   </div>
@@ -319,7 +319,7 @@
       <span><i class="lg-star">&#9733;</i>Target midpoint</span>
       <span><i class="lg-new"></i>BenchFill item</span>
     </div>
-    <svg id="gf-strip" role="img" aria-label="Item difficulties on the 0 to 1 axis with the three largest gaps highlighted"></svg>
+    <svg id="gf-strip" role="img" aria-label="Normalized item difficulties on the 0 to 1 axis with the three largest gaps highlighted"></svg>
     <div class="gf-zooms" id="gf-zooms"></div>
     <p class="explorer-note">Shown for the five benchmarks whose item-level difficulty estimates match the paper's Table 1 (AIME24, AIME25, AIME26, Gaokao2023en, IFEval); results for all eight benchmarks are in Table 2 below. The before/after Top-3 Gap Sum reduction equals the BenchFill column of Table 2. Difficulties are IRT estimates on the normalized [0,1] scale, not ground truth.</p>
   </div>
@@ -437,7 +437,7 @@
     </figure>
     <figure class="tab-panel" role="tabpanel" id="panel-fig7" aria-labelledby="tab-fig7" hidden>
       <a class="zoomable" href="./static/images/fig7_multi_round.png" data-caption="Figure 7: Multi-round target alignment during BenchFill search.">
-        <img src="./static/images/fig7_multi_round.png" width="2412" height="1136" loading="lazy" alt="Figure 7. Eight panels, one representative gap-filling case per benchmark, plotting the absolute target deviation of generated children against generation round, with round-level mean and standard deviation; the mean deviation generally decreases across rounds.">
+        <img src="./static/images/fig7_multi_round.png" width="2617" height="1238" loading="lazy" alt="Figure 7. Eight panels, one representative gap-filling case per benchmark, plotting the absolute target deviation of generated children against generation round, with round-level mean and standard deviation; the mean deviation generally decreases across rounds.">
       </a>
       <figcaption><b>Multi-round target alignment during BenchFill search.</b> Each panel shows one representative gap-filling case from a different benchmark. The horizontal axis denotes the generation round, and the vertical axis denotes the absolute target deviation, \(|\hat z-z^\star|\), for generated children. Blue points denote individual generated children, and red markers denote the round-level mean and standard deviation. Across most cases, the mean target deviation decreases over rounds, and the generated children become more concentrated around the target, showing that the search-and-annotate loop further improves target alignment beyond the rewriter&rsquo;s initial difficulty sensitivity. <span class="fig-src">(Paper, Figure 7)</span></figcaption>
     </figure>
