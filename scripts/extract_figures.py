@@ -1,10 +1,11 @@
-"""Extract the paper's figures as high-resolution PNGs for the website.
+"""Render the paper's figures as high-resolution PNGs for the website.
 
-Figures are rendered directly from the vector PDF (no screenshots), cropped to the
-union of the figure's drawings, text and images above its caption.
+Figures 1 and 2 are cropped from the compiled paper PDF (vector, no screenshots).
+Figures 4 and 5 are rendered directly from the paper's own figure files
+(Fig/search.pdf and Fig/ecdf_paper.pdf in the paper repository).
 
 Usage:
-    python scripts/extract_figures.py PATH/TO/paper.pdf static/images
+    python scripts/extract_figures.py PATH/TO/paper.pdf PATH/TO/paper/Fig static/images
 
 Requires PyMuPDF (`pip install pymupdf`).
 """
@@ -14,29 +15,19 @@ from pathlib import Path
 import pymupdf
 
 ZOOM = 6  # 432 dpi; ~2400 px wide for full-width figures
+WIDTH = 2400  # px, for figures rendered from standalone figure files
 
-# (output name, 1-based page, caption prefix)
+# (output name, 1-based page, caption prefix): cropped from the compiled paper
 FIGURES = [
     ("fig1_teaser", 2, "Figure 1"),
     ("fig2_pipeline", 5, "Figure 2"),
-    ("fig4_benchfill", 8, "Figure 4"),
 ]
-# Figures 6 and 7 (fig6_first_round.png, fig7_multi_round.png) are NOT extracted from the PDF:
-# the site uses the regenerated larger-font versions of the same plots (see README).
 
-# Figure 5 panels (page 35): title text -> (column, row). Used as static fallbacks
-# in the explorer for benchmarks whose item-level difficulties are not bundled.
-FIG5_LAYOUT = [
-    ["AIME26", "AMC23", "MATH-500"],
-    ["OlympiadBench", "Gaokao2023en", "GPQA-Diamond"],
-    ["ScienceQA", "HumanEval", "CORE-Bench Hard"],
-    ["SWE-bench-Mini", "GAIA", "USACO"],
-    ["IFEval", "MedQA", "MMLU-Pro-Biology"],
-    ["MMLU-Pro-Chemistry", "MMLU-Pro-Physics", "BBH-3 objects"],
-    ["BBH-5 objects", "BBH-7 objects", "ZebraLogic"],
+# (output name, figure file): rendered from the paper's Fig/ directory
+FIGURE_FILES = [
+    ("fig4_benchfill", "search.pdf"),
+    ("fig5_gap_filling", "ecdf_paper.pdf"),
 ]
-FIG5_COLS = [(134.0, 250.0), (256.0, 372.0), (378.0, 494.0)]  # axes x-extent (pt)
-FIG5_ROW_TOP = [101.7, 170.3, 238.8, 307.3, 375.8, 444.4, 512.9]  # title tops (pt)
 
 
 def figure_bbox(page, caption_prefix):
@@ -55,13 +46,9 @@ def figure_bbox(page, caption_prefix):
     return bb + (-3, -3, 3, 3)
 
 
-def slug(name):
-    return name.lower().replace(" ", "-")
-
-
-def main(pdf_path, out_dir):
+def main(pdf_path, fig_dir, out_dir):
     out = Path(out_dir)
-    (out / "fig5").mkdir(parents=True, exist_ok=True)
+    out.mkdir(parents=True, exist_ok=True)
     doc = pymupdf.open(pdf_path)
     mat = pymupdf.Matrix(ZOOM, ZOOM)
     for name, pno, cap in FIGURES:
@@ -76,15 +63,13 @@ def main(pdf_path, out_dir):
                                  ("b", pymupdf.Rect(mid + 2, bb.y0, bb.x1, bb.y1))):
                 page.get_pixmap(matrix=mat, clip=clip, alpha=False).save(out / f"{name}_{suffix}.png")
 
-    page = doc[34]
-    for r, row in enumerate(FIG5_LAYOUT):
-        y0 = FIG5_ROW_TOP[r] - 1
-        y1 = (FIG5_ROW_TOP[r + 1] - 1) if r + 1 < len(FIG5_ROW_TOP) else 598.0
-        for c, title in enumerate(row):
-            x0, x1 = FIG5_COLS[c]
-            clip = pymupdf.Rect(x0 - 8 if c == 0 else x0, y0, x1, y1)
-            page.get_pixmap(matrix=mat, clip=clip, alpha=False).save(out / "fig5" / f"{slug(title)}.png")
+    for name, fname in FIGURE_FILES:
+        page = pymupdf.open(Path(fig_dir) / fname)[0]
+        z = WIDTH / page.rect.width
+        pix = page.get_pixmap(matrix=pymupdf.Matrix(z, z), alpha=False)
+        pix.save(out / f"{name}.png")
+        print(name, pix.width, pix.height)
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2])
+    main(sys.argv[1], sys.argv[2], sys.argv[3])

@@ -1,4 +1,4 @@
-# BenchFill project page
+# Benchmark Difficulty Measure project page
 
 Project website for the paper **Your Benchmark Is an Empirical Measure Over Difficulty**
 (Yifan Sun\*, Naicheng Yu\*, Jiawen Gong\*, Jingyan Shen, Huan Zhang; \*equal contribution).
@@ -14,15 +14,13 @@ and uses relative paths only, so it works under the `/Benchfill-Website/` sub-pa
 ```
 index.html                 single page; all text content lives here
 static/css/style.css       styles
-static/js/main.js          math rendering, nav, copy-to-clipboard, lightbox, tabs, paper tables
-static/js/charts.js        interactive figures (ECDF explorer, gap-filling before/after, Table 2 chart)
+static/js/main.js          math rendering, nav, copy-to-clipboard, lightbox, Table 1, Table 2 values
+static/js/charts.js        interactive figures (ECDF explorer, Table 2 bar chart)
 static/data/benchmarks.js  Table 1 metrics + normalized item difficulties   (generated)
-static/data/gapfill.js     Table 2 values + BenchFill gap/insertion data     (generated)
-static/images/             figures rendered from the paper PDF, icons, social preview image
-static/images/fig5/        per-benchmark panels of paper Figure 5 (explorer fallback)
+static/images/             paper figures, icons, social preview image
 static/pdf/                hosted copy of the paper
-scripts/extract_figures.py re-render figures from the paper PDF
-scripts/build_data.py      regenerate static/data/*.js from the code release
+scripts/extract_figures.py re-render figures from the paper PDF and the paper's Fig/ files
+scripts/build_data.py      regenerate static/data/benchmarks.js from the code release
 .nojekyll                  serve files as-is on GitHub Pages
 ```
 
@@ -44,34 +42,25 @@ cd benchfill-website && python3 -m http.server 8000   # http://localhost:8000/
 
 ## Data provenance
 
-- **All displayed numbers come from the final paper.** Table 1 (25 benchmarks), Table 2,
-  Table 11, Table 12, and Table 13 are transcribed into `scripts/build_data.py` / `static/js/main.js`
-  / `index.html`.
-- **ECDF explorer.** The item-level normalized difficulties are min-max normalized IRT
-  `b_mean` estimates from `irt_results/*_difficulty.csv` in the code release. `build_data.py` bundles
-  a benchmark's items only if the recomputed DDM (same-size uniform reference at bin midpoints),
-  Max Gap, and Top-5 Gap Sum (endpoint gaps included) agree with Table 1 within 0.001. That holds for
-  10 benchmarks: MATH-500, Minerva-Math, OlympiadBench, Gaokao2023en, AIME24, AIME25, AIME26,
-  HumanEval, MBPP+, and IFEval. For the other 15, the explorer shows that benchmark's panel from
-  paper Figure 5 instead of plotting new curves.
-- **Gap-filling widget.** Original difficulties from the same release files, plus the 24 items in
-  `new_item_records.csv` (`difficulty` and `target` divided by 10). `build_data.py` asserts that the
-  recomputed Top-3 Gap Sum reduction and Target Dev. reproduce Table 2's BenchFill column; the widget
-  shows only the benchmarks whose item-level data also reproduces Table 1 (AIME24, AIME25, AIME26,
-  Gaokao2023en, IFEval). Table 2 and its chart show the paper's values for all eight.
+- **All displayed numbers come from the final paper** (Table 1 for 25 benchmarks, Table 2,
+  Table 13), transcribed into `scripts/build_data.py`, `static/js/main.js`, and `index.html`.
+- **ECDF explorer.** Item-level difficulties are min-max normalized IRT `b_mean` estimates from the
+  release's Difficulty Artifact (`data/benchmarks/<benchmark>/difficulty.csv`). `build_data.py`
+  bundles a benchmark's items only if the recomputed DDM (same-size uniform reference at bin
+  midpoints), Max Gap, and Top-5 Gap Sum (endpoint gaps included) agree with Table 1 within 0.001.
+  All 25 benchmarks currently pass.
 - **Displayed metrics** (tiles, tables, chart) always use the paper's reported values, never recomputed ones.
-- **Figures.** Rendered at 432 dpi directly from the vector paper PDF by `scripts/extract_figures.py`,
-  except Figures 6 and 7, which use the regenerated larger-font versions of the same plots
-  (`rebuttal_analysis/first_round/first_round_calibration_filtered.png` and
-  `rebuttal_analysis/multiround/multiround_target_deviation_selected.png` in the experiment workspace).
-  `extract_figures.py` leaves them untouched.
-- The measure-view schematic in the "Measure View" section is illustrative and labelled as such.
+- **Figures.** Figures 1 and 2 are cropped at 432 dpi from the vector paper PDF; Figure 4
+  (`Fig/search.pdf`) and the four-benchmark gap-filling figure (`Fig/ecdf_paper.pdf`) are rendered
+  from the paper's own figure files. `scripts/extract_figures.py` does both.
+- **Augmented benchmark table.** Counts of original (`-origin-`) and generated (`-fill-`) items in
+  the release's `data/filled_benchs/*.json`.
 
 To regenerate (PyMuPDF and NumPy required):
 
 ```bash
-python scripts/build_data.py   ../benchfill-release static/data
-python scripts/extract_figures.py ../path/to/paper.pdf static/images
+python scripts/build_data.py      ../benchfill-release static/data
+python scripts/extract_figures.py ../path/to/paper.pdf ../benchmark-paper-overleaf/Fig static/images
 ```
 
 ## Things to update at release
