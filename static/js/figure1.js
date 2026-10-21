@@ -9,6 +9,8 @@
   var modelB = function (z) { return modelA(z) + 0.18 / (1 + Math.exp(-20 * (z - 0.68))); };
   var before = function (z) { return 0.84 - 0.60 * z; };
   var halfWidth = 0.11;
+  var closeThreshold = 0.05;
+  function scoreVerdict(a, b) { return Math.abs(b - a) < closeThreshold ? "Close!" : "Not close!"; }
   function improvement(z, center) {
     var distance = Math.abs(z - center) / halfWidth;
     return distance >= 1 ? 0 : 0.22 * Math.pow(Math.cos(distance * Math.PI / 2), 2);
@@ -41,7 +43,7 @@
     return { items: items, before: mean(items.map(before)), after: mean(items.map(function (z) { return before(z) + improvement(z, center); })), uniformBefore: uniformBefore, uniformAfter: uniformAfter };
   }
   // Export only the pure simulation for reproducible numeric checks in Node.
-  if (typeof module !== "undefined" && module.exports) module.exports = { mismatch: mismatch, coverage: coverage, improvement: improvement, before: before, modelA: modelA, modelB: modelB };
+  if (typeof module !== "undefined" && module.exports) module.exports = { mismatch: mismatch, coverage: coverage, improvement: improvement, before: before, modelA: modelA, modelB: modelB, scoreVerdict: scoreVerdict };
   if (typeof document === "undefined") return;
   var root = document.getElementById("figure1-interactive");
   if (!root) return;
@@ -94,8 +96,14 @@
   }
   var scores = function (a, b, labels) { return labels[0] + " " + (100 * a).toFixed(1) + " · " + labels[1] + " " + (100 * b).toFixed(1); };
   var pp = function (v) { return (v * 100).toFixed(2) + " pp"; };
+  function showVerdict(id, a, b) {
+    var badge = $(id), verdict = scoreVerdict(a, b);
+    badge.textContent = verdict;
+    badge.classList.toggle("is-close", verdict === "Close!");
+  }
   function drawMismatch() {
-    var center = Number($("f1-emphasis").value) / 100;
+    var alignment = Number($("f1-emphasis").value) / 100;
+    var center = 0.24 + 0.52 * alignment;
     var result = mismatch(center), svg = $("f1-mismatch-chart");
     var f = chartFrame(svg, "Measure mismatch: fixed models, changing benchmark difficulty weights");
     curve(svg, f, modelA, color.blue);
@@ -104,16 +112,19 @@
     histogram(svg, f, result.items, 247, color.blue);
     text(svg, f.sx(0), 271, "Fixed target distribution", { fill: color.orange });
     histogram(svg, f, result.target, 320, color.orange);
-    $("f1-emphasis-value").textContent = center.toFixed(2);
+    $("f1-emphasis-value").textContent = Math.round(alignment * 100) + "%";
+    $("f1-emphasis").setAttribute("aria-valuetext", Math.round(alignment * 100) + "% of the way to the target distribution");
     $("f1-benchmark-scores").textContent = scores(result.a, result.b, ["A", "B"]);
     $("f1-target-scores").textContent = scores(result.targetA, result.targetB, ["A", "B"]);
     $("f1-benchmark-gap").textContent = "Gap " + pp(result.b - result.a);
     $("f1-target-gap").textContent = "Gap " + pp(result.targetB - result.targetA);
-    $("f1-mismatch-takeaway").textContent = center < 0.45
-      ? "Most test questions lie where the models behave similarly, concealing their difference on harder questions."
-      : center < 0.68
-        ? "More questions now cover the region where the models differ. Their observed score gap grows."
-        : "The benchmark now emphasizes harder questions. The model curves have not changed—only the evaluation weights have.";
+    showVerdict("f1-benchmark-verdict", result.a, result.b);
+    showVerdict("f1-target-verdict", result.targetA, result.targetB);
+    $("f1-mismatch-takeaway").textContent = alignment < 0.01
+      ? "The benchmark and target weight difficulty differently. The benchmark makes the models look close, while the target reveals a clear difference."
+      : alignment < 1
+        ? "The benchmark distribution is moving closer to the target. Its observed model gap becomes more faithful to the target comparison. The models stay fixed."
+        : "The benchmark distribution now matches the target, so both report the same model difference. The model curves have not changed. Only the evaluation weights have.";
     svg.setAttribute("aria-label", "Illustrative model gap: benchmark " + pp(result.b - result.a) + ", fixed target " + pp(result.targetB - result.targetA));
   }
   function drawCoverage() {
@@ -160,20 +171,9 @@
   $("f1-progress").addEventListener("input", drawCoverage);
   $("f1-add-probe").addEventListener("change", drawCoverage);
   $("f1-reset").addEventListener("click", function () {
-    $("f1-emphasis").value = "24"; $("f1-progress").value = "65"; $("f1-add-probe").checked = false;
+    $("f1-emphasis").value = "0"; $("f1-progress").value = "65"; $("f1-add-probe").checked = false;
     drawMismatch(); drawCoverage();
   });
-  var original = document.querySelector(".teaser-figure");
-  if (original) {
-    var disclosure = document.createElement("details");
-    disclosure.className = "f1-original wide";
-    var summary = document.createElement("summary");
-    summary.textContent = "View original Figure 1 from the paper";
-    original.parentNode.insertBefore(disclosure, original);
-    disclosure.appendChild(summary); disclosure.appendChild(original);
-    window.addEventListener("beforeprint", function () { disclosure.dataset.wasOpen = String(disclosure.open); disclosure.open = true; });
-    window.addEventListener("afterprint", function () { disclosure.open = disclosure.dataset.wasOpen === "true"; });
-  }
   var oldWidth = 0;
   function redraw() { var width = root.clientWidth; if (Math.abs(width - oldWidth) > 2) { oldWidth = width; drawMismatch(); drawCoverage(); } }
   if ("ResizeObserver" in window) new ResizeObserver(redraw).observe(root);
