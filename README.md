@@ -46,11 +46,13 @@ cd benchfill-website && python3 -m http.server 8000   # http://localhost:8000/
 ## Data provenance
 
 - **Interactive Figure 1.** A clearly labeled synthetic illustration with two controls:
-  move the benchmark's difficulty emphasis while keeping the model curves and target fixed,
+  move the benchmark distribution toward a fixed target while keeping the model curves fixed,
   or move a compact local improvement across an uncovered interval. The optional probe item
   demonstrates observing an improvement; it is not a BenchFill algorithm run. Scores use
-  equal-weight synthetic items and a uniform-difficulty reference. The original figure is
-  retained in an expandable panel and remains visible without JavaScript.
+  equal-weight synthetic items and a uniform-difficulty reference. The left slider ends at
+  the target distribution. Each score card labels the two models as “Close!” when their
+  absolute gap is below 5 percentage points, and “Not close!” otherwise. This illustrative
+  threshold is not a statistical significance test. The static Figure 1 is not displayed.
   Run `node scripts/check_figure1.cjs` to verify the weighting and coverage examples.
 - **AIME24 release.** Updated to 20 generated items / 50 total, matching the final paper
   and the current curated release.

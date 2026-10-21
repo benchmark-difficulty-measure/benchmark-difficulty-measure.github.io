@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Your Benchmark Is an Empirical Measure Over Difficulty</title>
-<meta name="description" content="A benchmark induces an empirical measure over item difficulty. We formalize two failure modes, measure mismatch and coverage gaps, diagnose 25 LLM benchmarks, and introduce a difficulty-targeted item rewriting method that fills coverage gaps.">
+<meta name="description" content="We formulate a benchmark as an empirical measure over item difficulty. We formalize two failure modes, measure mismatch and coverage gaps, diagnose 25 LLM benchmarks, and introduce a difficulty-targeted item rewriting method that fills coverage gaps.">
 <meta name="author" content="Yifan Sun, Naicheng Yu, Jiawen Gong, Jingyan Shen, Huan Zhang">
 <meta name="keywords" content="LLM evaluation, benchmark, item difficulty, item response theory, Wasserstein distance, coverage gap, benchmark difficulty measure">
 <meta name="color-scheme" content="light">
@@ -91,15 +91,16 @@
 <p class="lead">Benchmark evaluation looks simple: run models on a set of questions and average the results. But the conclusion depends not only on how well models perform, but also on <em>how the benchmark's questions are distributed</em>. Does a benchmark faithfully measure the model differences and training improvements we actually care about?</p>
 
 <section class="f1-interactive wide" id="figure1-interactive" aria-labelledby="f1-heading" hidden>
-  <div class="f1-heading"><div><p class="f1-eyebrow">Figure 1 · Interactive intuition</p><h2 id="f1-heading">What does your benchmark actually see?</h2></div><button type="button" id="f1-reset">Reset both ↺</button></div>
+  <div class="f1-heading"><div><p class="f1-eyebrow">Interactive intuition</p><h2 id="f1-heading">What does your benchmark actually see?</h2></div><button type="button" id="f1-reset">Reset both ↺</button></div>
   <div class="f1-panels">
     <article class="f1-panel f1-mismatch" aria-labelledby="f1-mismatch-title">
       <h3 id="f1-mismatch-title"><span>(a)</span> Measure mismatch</h3>
-      <p class="f1-explanation">Keep the models fixed. Move the benchmark toward harder questions to reveal a larger model difference.</p>
+      <p class="f1-explanation">Keep the models fixed. Move the benchmark distribution closer to the target distribution to better reflect the model difference of interest.</p>
       <div class="f1-legend"><span><i class="f1-key f1-blue"></i>Model A</span><span><i class="f1-key f1-orange"></i>Model B</span></div>
       <svg id="f1-mismatch-chart" role="img" aria-label="Fixed model performance curves above changing benchmark and fixed target difficulty distributions"></svg>
-      <div class="f1-control"><label for="f1-emphasis">Benchmark difficulty emphasis <output id="f1-emphasis-value" for="f1-emphasis">0.24</output></label><input type="range" id="f1-emphasis" min="15" max="85" value="24" step="1"><div class="f1-range-labels"><span>Easier</span><span>Harder</span></div></div>
-      <div class="f1-score-pair" aria-live="polite" aria-atomic="true"><div><span>Benchmark scores</span><p id="f1-benchmark-scores"></p><strong id="f1-benchmark-gap"></strong></div><div><span>Target scores</span><p id="f1-target-scores"></p><strong id="f1-target-gap"></strong></div></div>
+      <div class="f1-control"><label for="f1-emphasis">Alignment with target <output id="f1-emphasis-value" for="f1-emphasis">0%</output></label><input type="range" id="f1-emphasis" min="0" max="100" value="0" step="1"><div class="f1-range-labels"><span>Mismatched</span><span>Matches target</span></div></div>
+      <div class="f1-score-pair" aria-live="polite" aria-atomic="true"><div><span>Benchmark scores</span><p id="f1-benchmark-scores"></p><strong id="f1-benchmark-gap"></strong><span class="f1-verdict" id="f1-benchmark-verdict"></span></div><div><span>Target scores</span><p id="f1-target-scores"></p><strong id="f1-target-gap"></strong><span class="f1-verdict" id="f1-target-verdict"></span></div></div>
+      <p class="f1-threshold">For this illustration, “Close!” means the two models differ by less than 5 percentage points. This is not a statistical significance test.</p>
       <p class="f1-takeaway" id="f1-mismatch-takeaway"></p>
     </article>
     <article class="f1-panel f1-coverage" aria-labelledby="f1-coverage-title">
@@ -113,24 +114,13 @@
       <p class="f1-takeaway" id="f1-coverage-takeaway"></p>
     </article>
   </div>
-  <p class="f1-note"><b>Illustrative simulation, not experimental results.</b> Curves and item locations are synthetic; every displayed score is computed from them. The target in (a) stays fixed. In (b), uniform-difficulty gain averages the improvement over [0, 1]; adding one item is an illustration, not a BenchFill run. The original paper figure is preserved below.</p>
+  <p class="f1-note"><b>Illustrative simulation, not experimental results.</b> Curves and item locations are synthetic; every displayed score is computed from them. The target in (a) stays fixed. In (b), uniform-difficulty gain averages the improvement over [0, 1].</p>
 </section>
-
-<figure class="teaser-figure wide">
-  <a class="zoomable" href="./static/images/fig1_teaser.png" data-caption="Figure 1: Two benchmark failure cases.">
-    <img class="teaser-full" src="./static/images/fig1_teaser.png" width="2413" height="816" alt="Figure 1. Left, measure mismatch: Models A and B are tied on easy questions but separate on hard ones. The benchmark distribution concentrates on easy questions, so benchmark scores are 72.1 versus 72.4 (indistinguishable), whereas a distribution of interest weighted toward harder questions gives target scores 61.8 versus 68.9 (a clear difference). Right, coverage gaps: after training, a model improves substantially in a local difficulty region that contains no benchmark questions, so the observed benchmark score only moves from 64.2 to 64.6 and the true training progress is missed.">
-  </a>
-  <div class="teaser-split">
-    <img src="./static/images/fig1_teaser_a.png" width="1293" height="816" loading="lazy" alt="Figure 1(a), measure mismatch: Models A and B are tied on easy questions and separate on hard ones. Benchmark scores A = 72.1, B = 72.4 are indistinguishable, while target scores under the distribution of interest are A = 61.8, B = 68.9.">
-    <img src="./static/images/fig1_teaser_b.png" width="1102" height="816" loading="lazy" alt="Figure 1(b), coverage gaps: a substantial local improvement falls in a difficulty interval with no benchmark questions, so the benchmark score moves only from 64.2 to 64.6.">
-  </div>
-  <figcaption><b>Two benchmark failure cases.</b> In both panels, the curves show true model conditional performance as a function of question difficulty. <b>(a) Measure Mismatch.</b> The benchmark emphasizes easy questions, where the models perform similarly, while the difficulty distribution we care about places more weight on harder questions, where they differ substantially. Because the benchmark and the target distribution weight the difficulty axis differently, they lead to different conclusions for the same two models. <b>(b) Coverage Gaps.</b> A model actually improves substantially over a localized difficulty region. Because the benchmark has no questions in that region, this improvement is not reflected in the observed benchmark score, causing meaningful training progress to be missed. <span class="fig-src">(Paper, Figure 1)</span></figcaption>
-</figure>
 
 <!-- ============================== TL;DR ============================== -->
 <section class="section" id="tldr">
   <h2>TL;DR</h2>
-  <p>A benchmark induces an empirical measure over item difficulty: each question contributes equal mass at its difficulty level. This view exposes two fundamental problems.</p>
+  <p>We formulate a benchmark as an empirical measure over item difficulty: each question contributes equal mass at its difficulty level. This formulation exposes two fundamental problems.</p>
   <div class="duo">
     <div class="duo-card mismatch">
       <p class="duo-title"><span class="dot dot-mismatch" aria-hidden="true"></span>Measure Mismatch</p>
@@ -146,26 +136,44 @@
 <!-- ============================== MEASURE VIEW ============================== -->
 <section class="section" id="measure">
   <h2>A measure-based view of benchmarks</h2>
-  <p>Place every benchmark item on a difficulty axis from 0 (easiest) to 1 (hardest). A model \(\theta\) is then described by its performance curve \(s_\theta(z)\): its expected performance, e.g., pass@1, on items of difficulty \(z\).</p>
-  <div class="def-row">
-    <div class="def">
+  <div class="benchmark-measure">
+    <div>
       <p class="def-label">Benchmark measure</p>
-      <p>A benchmark \(B\) of \(n\) items with difficulties \(z_1,\dots,z_n\) puts equal mass \(1/n\) at each item: \[\nu_B=\frac1n\sum_{i=1}^n\delta_{z_i}.\]</p>
-        </div>
-        <div class="def">
-          <p class="def-label">Score as an integral</p>
-          <p>The usual average score is exactly an integral against this measure: \[S_B(\theta)=\frac1n\sum_{i=1}^n s_\theta(z_i)=\int s_\theta(z)\,d\nu_B(z).\]</p>
-        </div>
+      <p>We represent a benchmark \(B\) as an empirical measure over difficulty. Each of its \(n\) items contributes equal mass \(1/n\) at its difficulty \(z_i\in[0,1]\).</p>
+    </div>
+    <div class="eq-block">\[\nu_B=\frac1n\sum_{i=1}^n\delta_{z_i}\]</div>
   </div>
-
-  <p>Comparing two models works the same way: the benchmark reports \(D_B=\int\Delta\,d\nu_B\), where \(\Delta(z)=s_{\theta'}(z)-s_\theta(z)\) is their performance difference, so a leaderboard gap depends both on how the models differ <em>and</em> on where the benchmark places its items. What we actually want is \(D_\mu=\int\Delta\,d\mu\) under a target distribution \(\mu\) over difficulty that encodes the intended evaluation objective.</p>
+  <div class="measure-grid">
+    <article class="def">
+      <p class="def-label">Model performance</p>
+      <div class="eq-block">\[s_\theta(z)\]</div>
+      <p>The expected performance of model \(\theta\) on items of difficulty \(z\), such as pass@1.</p>
+    </article>
+    <article class="def measure-integral">
+      <p class="def-label">Benchmark score</p>
+      <div class="eq-block">\[\begin{aligned}S_B(\theta)&=\int s_\theta(z)\,d\nu_B(z)\\&=\frac1n\sum_{i=1}^n s_\theta(z_i)\end{aligned}\]</div>
+      <p>The usual average score is an integral against the benchmark measure.</p>
+    </article>
+    <article class="def">
+      <p class="def-label">Model performance difference</p>
+      <div class="eq-block">\[\Delta(z)=s_{\theta'}(z)-s_\theta(z)\]</div>
+      <p>The difference between two models at the same difficulty.</p>
+    </article>
+    <article class="def measure-integral">
+      <p class="def-label">Benchmark score difference</p>
+      <div class="eq-block">\[\begin{aligned}D_B(\theta',\theta)&=\int\Delta(z)\,d\nu_B(z)\\&=S_B(\theta')-S_B(\theta)\end{aligned}\]</div>
+      <p>The observed model gap depends on both the models and the benchmark's difficulty distribution.</p>
+    </article>
+  </div>
 
   <h3>Two diagnostic metrics</h3>
   <div class="metric-cards">
     <div class="metric-card mismatch">
       <p class="metric-name">Difficulty Distribution Mismatch</p>
+      <p>A target distribution \(\mu\) over difficulty specifies the intended evaluation objective.</p>
       <div class="eq-block">\[\mathrm{DDM}(B;\mu):=W_1(\nu_B,\mu)\]</div>
-      <p>The 1-Wasserstein distance: how much mass must be moved, and how far, to turn the benchmark's difficulty distribution into the target one.</p>
+      <p>The 1-Wasserstein distance measures how much mass must be moved, and how far, to turn the benchmark's difficulty distribution into the target one.</p>
+      <p>The target model difference is \(D_\mu(\theta',\theta)=\int\Delta(z)\,d\mu(z)\).</p>
     </div>
     <div class="metric-card gap">
       <p class="metric-name">Maximum Gap</p>
@@ -206,7 +214,7 @@
     <figcaption><b>Overview of our benchmark difficulty estimation and metric calculation pipeline.</b> We collect empirical success rates from multiple LLMs on benchmark items, diagnose the response matrix, fit a 1PL IRT model to estimate item difficulties, perform post-fit IRT diagnostics, and compute two metrics over the normalized difficulty distribution. <span class="fig-src">(Paper, Figure 2)</span></figcaption>
   </figure>
   <ul class="facts">
-    <li><b>Model panel.</b> For non-agentic benchmarks, 12 LLMs from 1.7B to 397B parameters, stratified across the Text Arena leaderboard, each with up to 32 rollouts per item. Agentic benchmarks use HAL results for 15&ndash;66 frontier closed-source LLMs.</li>
+    <li><b>Model panel.</b> For non-agentic benchmarks, 12 LLMs from 1.7B to 397B parameters, stratified across the Text Arena leaderboard, each with up to 32 rollouts per item. Agentic benchmarks use HAL results for 15 to 66 frontier closed-source LLMs.</li>
     <li><b>Fitting and diagnostics.</b> Bayesian inference via MCMC. A leave-one-out analysis supports the stability of the 12-model panel.</li>
     <li><b>Metrics.</b> Difficulties are normalized to \([0,1]\). DDM is measured against a same-size empirical uniform reference with points at \((i-\tfrac12)/n\), and gap metrics include the endpoint gaps.</li>
   </ul>
@@ -284,10 +292,10 @@
 <!-- ============================== RESULTS ============================== -->
 <section class="section" id="results">
   <h2>Results</h2>
-  <p>We fill gaps in 8 representative benchmarks from different domains, targeting the three most pronounced gaps in each and inserting one item per gap. The rewriter is MiniMax-M2.7 (temperature 1.0). The search runs for at most 8 rounds, each with 4 parents &times; 4 children and a reference list of at most 16 nearby item&ndash;difficulty pairs, and stops early once an item is within 0.01 of the target. The <b>baseline</b> is a budget-matched best-of-N rewriter with uniformly sampled parents: it has the same rewrite budget and the same final selection rule, but no difficulty-aware retrieval, reference lists, or memory.</p>
+  <p>We fill gaps in 8 representative benchmarks from different domains, targeting the three most pronounced gaps in each and inserting one item per gap. The rewriter is MiniMax-M2.7 (temperature 1.0). The search runs for at most 8 rounds, each with 4 parents &times; 4 children and a reference list of at most 16 nearby item and difficulty pairs, and stops early once an item is within 0.01 of the target. The <b>baseline</b> is a budget-matched best-of-N rewriter with uniformly sampled parents: it has the same rewrite budget and the same final selection rule, but no difficulty-aware retrieval, reference lists, or memory.</p>
 
   <div class="stat-row" role="list">
-    <div class="stat accent" role="listitem"><p class="stat-num">32.67%</p><p class="stat-label">average Top-3 Gap Sum reduction with our method (21.09%&ndash;38.88% per benchmark)</p></div>
+    <div class="stat accent" role="listitem"><p class="stat-num">32.67%</p><p class="stat-label">average Top-3 Gap Sum reduction with our method (21.09% to 38.88% per benchmark)</p></div>
     <div class="stat" role="listitem"><p class="stat-num">17.52%</p><p class="stat-label">budget-matched baseline</p></div>
     <div class="stat" role="listitem"><p class="stat-num">35.06%</p><p class="stat-label">idealized oracle reference (not a method)</p></div>
     <div class="stat" role="listitem"><p class="stat-num">0.005</p><p class="stat-label">average target deviation (baseline: 0.048)</p></div>
