@@ -1,6 +1,5 @@
 /* Synthetic, deterministic Figure 1 illustration. No paper results are changed.
- * Scores are equal-weight means over the displayed synthetic item locations.
- * The uniform score uses midpoint integration over [0,1]. */
+ * Scores are equal-weight means over the displayed synthetic item locations. */
 (function () {
   "use strict";
   var clamp = function (v) { return Math.max(0, Math.min(1, v)); };
@@ -9,13 +8,13 @@
   var modelB = function (z) { return modelA(z) + 0.18 / (1 + Math.exp(-20 * (z - 0.68))); };
   var before = function (z) { return 0.84 - 0.60 * z; };
   var halfWidth = 0.11;
-  var closeThreshold = 0.05;
+  var closeThreshold = 0.03;
   function gapVerdict(result) {
     var benchmarkGap = result.b - result.a, targetGap = result.targetB - result.targetA;
-    return Math.abs(benchmarkGap - targetGap) < closeThreshold ? "Close!" : "Not close!";
+    return Math.abs(benchmarkGap - targetGap) <= closeThreshold + Number.EPSILON ? "Close!" : "Not close!";
   }
-  function isMissedProgress(observedGain, referenceGain) {
-    return referenceGain > 0 && Math.abs(observedGain) * 100 < 0.005;
+  function isMissedProgress(observedGain, localGain) {
+    return localGain > 0 && Math.abs(observedGain) * 100 < 0.005;
   }
   function improvement(z, center) {
     var distance = Math.abs(z - center) / halfWidth;
@@ -40,13 +39,7 @@
     var items = baseItems.slice();
     if (addProbe) items.push(center);
     items.sort(function (a, b) { return a - b; });
-    var uniformBefore = 0, uniformAfter = 0;
-    for (var i = 0; i < 2000; i++) {
-      var z = (i + 0.5) / 2000;
-      uniformBefore += before(z) / 2000;
-      uniformAfter += (before(z) + improvement(z, center)) / 2000;
-    }
-    return { items: items, before: mean(items.map(before)), after: mean(items.map(function (z) { return before(z) + improvement(z, center); })), uniformBefore: uniformBefore, uniformAfter: uniformAfter };
+    return { items: items, before: mean(items.map(before)), after: mean(items.map(function (z) { return before(z) + improvement(z, center); })) };
   }
   // Export only the pure simulation for reproducible numeric checks in Node.
   if (typeof module !== "undefined" && module.exports) module.exports = { mismatch: mismatch, coverage: coverage, improvement: improvement, before: before, modelA: modelA, modelB: modelB, gapVerdict: gapVerdict, isMissedProgress: isMissedProgress };
@@ -156,10 +149,8 @@
     el("circle", { cx: f.sx(center), cy: 293, r: 3.5, fill: color.green }, svg);
     $("f1-progress-value").textContent = center.toFixed(2);
     $("f1-training-scores").textContent = scores(result.before, result.after, ["Before", "after"]);
-    $("f1-uniform-scores").textContent = scores(result.uniformBefore, result.uniformAfter, ["Before", "after"]);
     $("f1-observed-gain").textContent = "+" + pp(result.after - result.before);
-    $("f1-uniform-gain").textContent = "+" + pp(result.uniformAfter - result.uniformBefore);
-    var missed = isMissedProgress(result.after - result.before, result.uniformAfter - result.uniformBefore);
+    var missed = isMissedProgress(result.after - result.before, improvement(center, center));
     $("f1-observed-card").classList.toggle("is-missed", missed);
     $("f1-missed-progress").hidden = !missed;
     $("f1-coverage-takeaway").classList.toggle("is-missed", missed);
@@ -170,7 +161,7 @@
         : missed
           ? "The model improves, but the benchmark reports almost no gain."
           : "The improvement overlaps existing questions, so some of the training progress becomes visible to the benchmark.";
-    svg.setAttribute("aria-label", "Illustrative training gain: observed " + pp(result.after - result.before) + ", uniform difficulty " + pp(result.uniformAfter - result.uniformBefore) + (probe ? ", with one added probe item" : ""));
+    svg.setAttribute("aria-label", "Illustrative training gain: observed " + pp(result.after - result.before) + (probe ? ", with one added probe item" : ""));
   }
   root.hidden = false;
   drawMismatch(); drawCoverage();
