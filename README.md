@@ -49,11 +49,12 @@ cd benchfill-website && python3 -m http.server 8000   # http://localhost:8000/
   shift the benchmark's difficulty emphasis while keeping the model curves and target fixed,
   or move a compact local improvement across a coverage gap. The optional probe item
   demonstrates observing an improvement; it is not a BenchFill algorithm run. Scores use
-  equal-weight synthetic items and a uniform-difficulty reference. The left slider restores
+  equal-weight synthetic items. The left slider restores
   the difficulty scale from 0.15 to 0.85, starting at 0.24; the target is centered at 0.76.
   A single verdict below both cards compares the benchmark model gap with the target model
-  gap, labeling them “Close!” when their difference is below 5 percentage points. Positive
-  reference gains that the benchmark reports as +0.00 pp are highlighted as missed progress.
+  gap, labeling them “Close!” when their difference is at most 3 percentage points. Local
+  improvements that the benchmark reports as +0.00 pp are highlighted as missed progress.
+  The coverage example displays only the observed benchmark gain.
   The static Figure 1 is not displayed.
   Run `node scripts/check_figure1.cjs` to verify the weighting and coverage examples.
 - **AIME24 release.** Updated to 20 generated items / 50 total, matching the final paper

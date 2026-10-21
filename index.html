@@ -34,27 +34,27 @@
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Noto+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
 <link rel="stylesheet" href="./static/css/style.css?v=ee880205">
-<link rel="stylesheet" href="./static/css/figure1.css?v=0874be70">
+<link rel="stylesheet" href="./static/css/figure1.css?v=dbedbf1a">
 
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"></script>
 <script defer src="./static/data/benchmarks.js"></script>
 <script defer src="./static/js/main.js?v=9c3225e2"></script>
 <script defer src="./static/js/charts.js?v=9f85dc39"></script>
-<script defer src="./static/js/figure1.js?v=1a4026a5"></script>
+<script defer src="./static/js/figure1.js?v=8207e4ef"></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
 
 <nav class="nav" aria-label="Sections"><div class="inner">
   <div class="nav-links">
-    <a href="#tldr">TL;DR</a>
-    <a href="#measure">Measure View</a>
-    <a href="#diagnosis">Diagnosis</a>
-    <a href="#explorer">Explorer</a>
-    <a href="#benchfill">Method</a>
+    <a href="#tldr">Overview</a>
+    <a href="#measure">Framework</a>
+    <a href="#diagnosis">Findings</a>
+    <a href="#explorer">Difficulty Explorer</a>
+    <a href="#benchfill">BenchFill</a>
     <a href="#results">Results</a>
-    <a href="#bibtex">BibTeX</a>
+    <a href="#bibtex">Citation</a>
   </div>
 </div></nav>
 
@@ -89,9 +89,9 @@
 <main class="wrap" id="main">
 
 <div class="lead">
-  <p>Our analysis of <b>25 widely used benchmarks</b> reveals two widespread problems:</p>
+  <p>Our analysis of <b>25 widely used benchmarks</b> reveals <span aria-hidden="true">🤯</span> two widespread problems:</p>
   <ol>
-    <li><b><span aria-hidden="true">⚖️</span> Measure mismatch.</b> The target distribution specifies how we want to weight different difficulty levels in evaluation, for example, equally across difficulty levels or according to how often they occur in real-world tasks. A benchmark whose difficulty distribution differs from this target can distort model comparisons.</li>
+    <li><b><span aria-hidden="true">⚖️</span> Measure mismatch.</b> A benchmark's difficulty distribution differs from the mix of difficulty levels we want the evaluation to reflect, which can distort model comparisons.</li>
     <li><b><span aria-hidden="true">🕳️</span> Coverage gaps.</b> Some difficulty regions contain no benchmark questions, so training improvements in those regions can go undetected.</li>
   </ol>
 </div>
@@ -115,17 +115,17 @@
       <div class="f1-legend"><span><i class="f1-key f1-gray"></i>Before training</span><span><i class="f1-key f1-blue"></i>After training</span></div>
       <svg id="f1-coverage-chart" role="img" aria-label="Training improvement curves above benchmark items and a coverage gap"></svg>
       <div class="f1-control"><label for="f1-progress">Center of local improvement <output id="f1-progress-value" for="f1-progress">0.65</output></label><input type="range" id="f1-progress" min="12" max="88" value="65" step="1"><div class="f1-range-labels"><span>Easier</span><span>Harder</span></div></div>
-      <div class="f1-score-pair" aria-live="polite" aria-atomic="true"><div id="f1-observed-card"><span>Observed benchmark gain</span><p id="f1-training-scores"></p><strong id="f1-observed-gain"></strong><span class="f1-missed" id="f1-missed-progress" hidden>Missed progress</span></div><div><span>Uniform-difficulty gain</span><p id="f1-uniform-scores"></p><strong id="f1-uniform-gain"></strong></div></div>
+      <div class="f1-score-pair f1-score-single" aria-live="polite" aria-atomic="true"><div id="f1-observed-card"><span>Observed benchmark gain</span><p id="f1-training-scores"></p><strong id="f1-observed-gain"></strong><span class="f1-missed" id="f1-missed-progress" hidden>Missed progress</span></div></div>
       <label class="f1-probe"><input type="checkbox" id="f1-add-probe">Add one benchmark item at the improvement peak</label>
       <p class="f1-takeaway" id="f1-coverage-takeaway"></p>
     </article>
   </div>
-  <p class="f1-note"><b>Illustrative simulation, not experimental results.</b> Curves and item locations are synthetic; every displayed score is computed from them. The target in (a) stays fixed. In (b), uniform-difficulty gain averages the improvement over [0, 1].</p>
+  <p class="f1-note"><b>Illustrative simulation, not experimental results.</b> Curves and item locations are synthetic; every displayed score is computed from them. The target in (a) stays fixed.</p>
 </section>
 
 <!-- ============================== TL;DR ============================== -->
 <section class="section" id="tldr">
-  <h2>TL;DR</h2>
+  <h2>Overview</h2>
   <p>We formulate a benchmark as an empirical measure over item difficulty: each question contributes equal mass at its difficulty level. This formulation exposes two fundamental problems.</p>
   <div class="duo">
     <div class="duo-card mismatch">
@@ -181,7 +181,6 @@
       <div class="eq-block">\[\mathrm{DDM}(B;\mu):=W_1(\nu_B,\mu)\]</div>
       <p>Here, \(\mu\) is the target distribution over difficulty, specifying the intended evaluation objective.</p>
       <p>The 1-Wasserstein distance measures how much mass must be moved, and how far, to turn the benchmark's difficulty distribution into the target one.</p>
-      <p>The target model difference is \(D_\mu(\theta',\theta)=\int\Delta(z)\,d\mu(z)\).</p>
     </div>
     <div class="metric-card gap">
       <p class="metric-name">Maximum Gap</p>
@@ -355,7 +354,7 @@
 
 <!-- ============================== BIBTEX ============================== -->
 <section class="section" id="bibtex">
-  <h2>BibTeX</h2>
+  <h2>Citation</h2>
   <div class="bibtex">
     <button class="copy-btn" type="button" id="copy-bibtex" aria-label="Copy BibTeX to clipboard">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h9a2 2 0 0 1 2 2v11h-2V5H8zM5 7h9a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2zm0 2v11h9V9z"/></svg><span>Copy</span></button>
