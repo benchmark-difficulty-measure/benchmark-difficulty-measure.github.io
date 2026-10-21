@@ -103,12 +103,6 @@ figcaption { font-size: .92rem; color: var(--muted); margin-top: 12px; line-heig
 figcaption b { color: var(--ink-2); }
 .fig-src { color: var(--faint); }
 .zoomable { display: block; cursor: zoom-in; border-radius: 6px; }
-.teaser-figure { margin-top: 6px; }
-.teaser-split { display: none; }
-@media (max-width: 720px) {
-  .teaser-figure .zoomable { display: none; }
-  .teaser-split { display: grid; gap: 18px; }
-}
 
 /* ---------- two failure modes ---------- */
 .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 6px 0 28px; }
@@ -122,7 +116,16 @@ figcaption b { color: var(--ink-2); }
 .duo-card.gap { background: #eff6f0; }
 
 /* ---------- measure view ---------- */
-.def-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 30px; margin: 4px 0 10px; }
+.benchmark-measure { display: grid; grid-template-columns: 1.25fr 1fr; gap: 24px; align-items: center; margin: 20px 0 16px; padding: 24px; border: 1px solid #d3dff7; border-left: 4px solid var(--accent); border-radius: var(--radius); background: var(--accent-soft); }
+.benchmark-measure > div { min-width: 0; }
+.benchmark-measure p:last-child { margin-bottom: 0; font-size: .97rem; }
+.benchmark-measure .def-label { color: var(--accent); font-size: 1.12rem; text-transform: none; letter-spacing: 0; margin-bottom: 8px !important; }
+.benchmark-measure .eq-block { font-size: 1.25rem; }
+.measure-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.measure-grid .def { min-width: 0; padding: 18px; border: 1px solid var(--line); border-radius: var(--radius); }
+.measure-grid .def p { font-size: .92rem; }
+.measure-grid .def p:last-child { margin-bottom: 0; }
+.measure-grid .measure-integral { background: var(--card); }
 .def { border-left: 3px solid var(--line); padding: 2px 0 2px 14px; }
 .def p { margin: 0 0 8px; }
 .def-label { font-weight: 700; font-size: .82rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 2px !important; }
@@ -293,11 +296,13 @@ mark, .hl { background: var(--hl); color: inherit; border-radius: 3px; padding: 
 
 /* ---------- responsive ---------- */
 @media (max-width: 860px) {
-  .def-row { grid-template-columns: 1fr; gap: 4px; }
   .metric-cards { grid-template-columns: 1fr; }
   .stat-row { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 720px) {
+  .benchmark-measure, .measure-grid { grid-template-columns: 1fr; }
+  .benchmark-measure { gap: 4px; padding: 18px; }
+  .benchmark-measure .eq-block { font-size: 1.12rem; }
   body { font-size: 16px; }
   .hero { padding: 40px 0 12px; }
   .hero h1 { font-size: 1.85rem; }
