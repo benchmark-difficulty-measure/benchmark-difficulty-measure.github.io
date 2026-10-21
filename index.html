@@ -33,14 +33,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Noto+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
-<link rel="stylesheet" href="./static/css/style.css?v=15cfccf7">
+<link rel="stylesheet" href="./static/css/style.css?v=06be2650">
 <link rel="stylesheet" href="./static/css/figure1.css?v=00630aaf">
 
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"></script>
 <script defer src="./static/data/benchmarks.js"></script>
-<script defer src="./static/js/main.js"></script>
-<script defer src="./static/js/charts.js"></script>
+<script defer src="./static/js/main.js?v=9c3225e2"></script>
+<script defer src="./static/js/charts.js?v=9f85dc39"></script>
 <script defer src="./static/js/figure1.js?v=40a73404"></script>
 </head>
 <body>
@@ -206,7 +206,7 @@
 <!-- ============================== DIAGNOSIS ============================== -->
 <section class="section" id="diagnosis">
   <h2>Diagnosing 25 popular benchmarks</h2>
-  <p>We analyze 25 widely used benchmarks spanning math, coding, agentic tasks, science, instruction following, logic, and medicine. Item difficulty is relative to model ability, so rather than using raw failure rates we estimate it with <b>Item Response Theory (IRT)</b>. In the one-parameter logistic (1PL) model, model \(j\) solves item \(i\) with probability \(\Pr(Y_{ij}=1)=\sigma(\theta_j-b_i)\), where \(\theta_j\) is the model's ability and \(b_i\) the item's difficulty. Multiple-choice benchmarks add a chance-level guessing parameter.</p>
+  <p>We analyze 25 widely used benchmarks spanning math, coding, agentic tasks, science, instruction following, logic, and medicine. We estimate item difficulties using <b>Item Response Theory (IRT)</b>.</p>
   <figure>
     <a class="zoomable" href="./static/images/fig2_pipeline.png" data-caption="Figure 2: Difficulty estimation and metric calculation pipeline.">
       <img src="./static/images/fig2_pipeline.png" width="2412" height="835" loading="lazy" alt="Figure 2. Pipeline in four panels: (1) collect a response matrix of empirical success rates of N LLMs on M items with k rollouts per item; (2) diagnose the response matrix with model and item information and inversion rates; (3) fit a 1PL IRT model P(Y_ij = 1) = sigma(theta_j - b_i) and check R-hat, minimum bulk ESS, divergent transitions, and leave-one-out stability; (4) compute the Wasserstein distance between the benchmark and uniform ECDFs and the maximum gap between sorted normalized difficulties.">
@@ -214,9 +214,8 @@
     <figcaption><b>Overview of our benchmark difficulty estimation and metric calculation pipeline.</b> We collect empirical success rates from multiple LLMs on benchmark items, diagnose the response matrix, fit a 1PL IRT model to estimate item difficulties, perform post-fit IRT diagnostics, and compute two metrics over the normalized difficulty distribution. <span class="fig-src">(Paper, Figure 2)</span></figcaption>
   </figure>
   <ul class="facts">
-    <li><b>Model panel.</b> For non-agentic benchmarks, 12 LLMs from 1.7B to 397B parameters, stratified across the Text Arena leaderboard, each with up to 32 rollouts per item. Agentic benchmarks use HAL results for 15 to 66 frontier closed-source LLMs.</li>
-    <li><b>Fitting and diagnostics.</b> Bayesian inference via MCMC. A leave-one-out analysis supports the stability of the 12-model panel.</li>
-    <li><b>Metrics.</b> Difficulties are normalized to \([0,1]\). DDM is measured against a same-size empirical uniform reference with points at \((i-\tfrac12)/n\), and gap metrics include the endpoint gaps.</li>
+    <li><b>Model panel.</b> For non-agentic benchmarks, 12 LLMs from 1.7B to 397B parameters. Agentic benchmarks use HAL results for 15 to 66 frontier closed-source LLMs.</li>
+    <li><b>Fitting and diagnostics.</b> Bayesian inference via MCMC. Checks cover model and item information, model and item inversion rates, \(\hat R\), effective sample size (ESS), divergent transitions, and leave-one-out robustness.</li>
   </ul>
 
   <div class="stat-row" role="list">
@@ -258,15 +257,15 @@
     <div class="table-scroll">
       <table class="data-table" id="table1">
         <caption><b>Table 1: Summary of proposed metrics across benchmarks.</b> DDM denotes the 1-Wasserstein distance between the benchmark empirical difficulty distribution and a same-size empirical uniform distribution on [0,&nbsp;1]. Max Gap is the largest gap between consecutive normalized difficulties, and Top-5 Sum is the sum of the five largest such gaps. # denotes the number of benchmark items. Lower is better for all three metrics. Highlighted entries mark comparatively large values for each metric: DDM &ge;&nbsp;0.10, Max Gap &ge;&nbsp;0.10, or Top-5 Sum &ge;&nbsp;0.30. <i>(Click a row to open it in the explorer.)</i></caption>
-        <thead><tr><th scope="col">Benchmark</th><th scope="col">Domain</th><th scope="col" class="num">DDM</th><th scope="col" class="num">Max Gap</th><th scope="col" class="num">Top-5 Sum</th><th scope="col" class="num">#</th></tr></thead>
+        <thead><tr><th scope="col">Benchmark</th><th scope="col" class="num">DDM</th><th scope="col" class="num">Max Gap</th><th scope="col" class="num">Top-5 Sum</th><th scope="col" class="num">#</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
   </details>
 
   <div class="takeaway">
-    <p><b>Several benchmarks deviate strongly from the neutral uniform target.</b> Their aggregate scores are more sensitive to over-represented difficulty regions and less sensitive to under-represented ones. Non-uniformity is <em>not</em> inherently a problem when it matches the intended evaluation objective. But when no such objective is specified, high-DDM leaderboard results reflect the benchmark's own difficulty weighting rather than a difficulty-neutral comparison, so users should check whether that weighting matches their use case.</p>
-    <p><b>Many benchmarks have large local coverage gaps.</b> A training run may make meaningful progress inside an uncovered region while the aggregate score barely moves. AIME24 and AIME25, for example, have Top-5 Gap Sums close to 0.5 despite their widespread use for monitoring RLVR training. And this is not only a small-benchmark artifact: HumanEval (164 items) and BBH-5 objects (250 items) also show substantial gap metrics.</p>
+    <p><b>Several benchmarks deviate strongly from the neutral uniform target.</b> Their aggregate scores are more sensitive to over-represented difficulty regions and less sensitive to under-represented ones. High-DDM leaderboard results reflect the benchmark's own difficulty weighting rather than a difficulty-neutral comparison, so users should check whether that weighting matches their use case.</p>
+    <p><b>Many benchmarks have large local coverage gaps.</b> A training run may make meaningful progress inside an uncovered region while the aggregate score barely moves. AIME24 and AIME25, for example, have Top-5 Gap Sums close to 0.5 despite their widespread use for monitoring RLVR training. This can cause useful training progress to be underestimated, promising runs to be prematurely discarded, and compute to be misallocated.</p>
   </div>
 
 </section>
@@ -292,27 +291,26 @@
 <!-- ============================== RESULTS ============================== -->
 <section class="section" id="results">
   <h2>Results</h2>
-  <p>We fill gaps in 8 representative benchmarks from different domains, targeting the three most pronounced gaps in each and inserting one item per gap. The rewriter is MiniMax-M2.7 (temperature 1.0). The search runs for at most 8 rounds, each with 4 parents &times; 4 children and a reference list of at most 16 nearby item and difficulty pairs, and stops early once an item is within 0.01 of the target. The <b>baseline</b> is a budget-matched best-of-N rewriter with uniformly sampled parents: it has the same rewrite budget and the same final selection rule, but no difficulty-aware retrieval, reference lists, or memory.</p>
-
-  <div class="stat-row" role="list">
-    <div class="stat accent" role="listitem"><p class="stat-num">32.67%</p><p class="stat-label">average Top-3 Gap Sum reduction with our method (21.09% to 38.88% per benchmark)</p></div>
-    <div class="stat" role="listitem"><p class="stat-num">17.52%</p><p class="stat-label">budget-matched baseline</p></div>
-    <div class="stat" role="listitem"><p class="stat-num">35.06%</p><p class="stat-label">idealized oracle reference (not a method)</p></div>
-    <div class="stat" role="listitem"><p class="stat-num">0.005</p><p class="stat-label">average target deviation (baseline: 0.048)</p></div>
-  </div>
-
-  <figure class="chart-figure">
-    <div class="legend" id="bar-legend">
-      <span><i class="lg-bar base"></i>Baseline (budget-matched)</span>
-      <span><i class="lg-bar bf"></i>Ours</span>
-      <span><i class="lg-oracle"></i>Oracle (idealized upper bound)</span>
-    </div>
-    <div class="chart-box">
-      <svg id="bar-chart" role="img" aria-label="Horizontal bar chart of Top-3 Gap Sum Reduction for eight benchmarks and their average; values are listed in the table below."></svg>
-      <div class="tooltip" id="bar-tip" hidden></div>
-    </div>
-    <figcaption><b>Top-3 Gap Sum Reduction (%) from the paper&rsquo;s Table 2</b> (higher is better). The oracle sequentially inserts three items, each at the midpoint of the current largest gap.</figcaption>
+  <p id="release">We release gap-filled versions of <b>AIME24, AIME25, AIME26, and AMC23</b>. Each dataset preserves the original benchmark questions and adds curated questions to improve difficulty coverage.</p>
+  <figure class="wide">
+    <a class="zoomable" href="./static/images/fig5_gap_filling.png" data-caption="Difficulty distributions of AIME24, AIME25, AIME26, and AMC23 before and after difficulty-targeted gap filling.">
+      <img src="./static/images/fig5_gap_filling.png" width="2400" height="695" loading="lazy" alt="Four ECDF panels for AIME24, AIME25, AIME26, and AMC23 on the normalized item difficulty axis. Orange curves show the original benchmark and blue curves the benchmark after filling; a shaded band marks the largest original gap. Largest gap before and after filling: AIME24 0.179 to 0.027, AIME25 0.158 to 0.030, AIME26 0.119 to 0.031, AMC23 0.217 to 0.022.">
+    </a>
+    <figcaption>Difficulty distributions of AIME24, AIME25, AIME26, and AMC23 before and after difficulty-targeted gap filling. The shaded regions indicate the largest original coverage gaps.</figcaption>
   </figure>
+  <div class="table-scroll">
+    <table class="data-table release-table">
+      <caption class="sr-only">Augmented benchmark release: number of original, generated, and final questions.</caption>
+      <thead><tr><th scope="col">Benchmark</th><th scope="col" class="num">Original</th><th scope="col" class="num">Generated</th><th scope="col" class="num">Final</th></tr></thead>
+      <tbody>
+        <tr><td>AIME24</td><td class="num">30</td><td class="num">20</td><td class="num">50</td></tr>
+        <tr><td>AIME25</td><td class="num">30</td><td class="num">22</td><td class="num">52</td></tr>
+        <tr><td>AIME26</td><td class="num">30</td><td class="num">23</td><td class="num">53</td></tr>
+        <tr><td>AMC23</td><td class="num">40</td><td class="num">40</td><td class="num">80</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small-note">Download <a href="https://huggingface.co/datasets/Yifan99/BenchFill" target="_blank" rel="noopener"><b>BenchFill Datasets on Hugging Face</b></a> or <a href="https://github.com/ASTRAL-Group/benchmark-difficulty-measure/tree/main/data/filled_benchs" target="_blank" rel="noopener"><code>data/filled_benchs</code> on GitHub</a>.</p>
 
   <h3>Representative generated items</h3>
   <p>Each pair shows an original benchmark item (the ancestor) and the final item selected from its lineage, with the main change highlighted. Difficulties are normalized to [0,1], and the target is in parentheses. Rewrites can move difficulty in either direction.</p>
@@ -346,28 +344,6 @@
     </article>
   </div>
   <p class="small-note">Item text as shown in the paper's Table 13. All 24 gap-filling items, with answers, parents, targets, and annotated difficulties, are in <a href="https://github.com/ASTRAL-Group/benchmark-difficulty-measure/blob/main/new_item_records.csv" target="_blank" rel="noopener"><code>new_item_records.csv</code></a> in the <a href="https://github.com/ASTRAL-Group/benchmark-difficulty-measure" target="_blank" rel="noopener">code release</a>.</p>
-
-  <h3 id="release">Gap-filled benchmarks</h3>
-  <figure class="wide">
-    <a class="zoomable" href="./static/images/fig5_gap_filling.png" data-caption="Difficulty distributions of AIME24, AIME25, AIME26, and AMC23 before and after difficulty-targeted gap filling.">
-      <img src="./static/images/fig5_gap_filling.png" width="2400" height="695" loading="lazy" alt="Four ECDF panels for AIME24, AIME25, AIME26, and AMC23 on the normalized item difficulty axis. Orange curves show the original benchmark and blue curves the benchmark after filling; a shaded band marks the largest original gap. Largest gap before and after filling: AIME24 0.179 to 0.027, AIME25 0.158 to 0.030, AIME26 0.119 to 0.031, AMC23 0.217 to 0.022.">
-    </a>
-    <figcaption>Difficulty distributions of AIME24, AIME25, AIME26, and AMC23 before and after difficulty-targeted gap filling. The shaded regions indicate the largest original coverage gaps.</figcaption>
-  </figure>
-  <p>We release augmented versions of these four math benchmarks. Each dataset contains the original benchmark questions followed by curated generated questions.</p>
-  <div class="table-scroll">
-    <table class="data-table release-table">
-      <caption class="sr-only">Augmented benchmark release: number of original, generated, and final questions.</caption>
-      <thead><tr><th scope="col">Benchmark</th><th scope="col" class="num">Original</th><th scope="col" class="num">Generated</th><th scope="col" class="num">Final</th></tr></thead>
-      <tbody>
-        <tr><td>AIME24</td><td class="num">30</td><td class="num">20</td><td class="num">50</td></tr>
-        <tr><td>AIME25</td><td class="num">30</td><td class="num">22</td><td class="num">52</td></tr>
-        <tr><td>AIME26</td><td class="num">30</td><td class="num">23</td><td class="num">53</td></tr>
-        <tr><td>AMC23</td><td class="num">40</td><td class="num">40</td><td class="num">80</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <p class="small-note">Download: <a href="https://github.com/ASTRAL-Group/benchmark-difficulty-measure/tree/main/data/filled_benchs" target="_blank" rel="noopener"><code>data/filled_benchs</code></a> in the code repository.</p>
 </section>
 
 <!-- ============================== BIBTEX ============================== -->

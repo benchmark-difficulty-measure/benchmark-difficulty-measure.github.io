@@ -14,8 +14,8 @@ and uses relative paths, supporting both the domain root and a repository sub-pa
 ```
 index.html                 single page; all text content lives here
 static/css/style.css       styles
-static/js/main.js          math rendering, nav, copy-to-clipboard, lightbox, Table 1, Table 2 values
-static/js/charts.js        interactive figures (ECDF explorer, Table 2 bar chart)
+static/js/main.js          math rendering, nav, copy-to-clipboard, lightbox, Table 1
+static/js/charts.js        interactive ECDF explorer
 static/js/figure1.js       synthetic Figure 1 simulation with computed scores
 static/css/figure1.css     scoped styles for the Figure 1 enhancement
 static/data/benchmarks.js  Table 1 metrics + normalized item difficulties   (generated)
@@ -57,8 +57,8 @@ cd benchfill-website && python3 -m http.server 8000   # http://localhost:8000/
 - **AIME24 release.** Updated to 20 generated items / 50 total, matching the final paper
   and the current curated release.
 
-- **All experimental numbers come from the final paper** (Table 1 for 25 benchmarks, Table 2,
-  Table 13), transcribed into `scripts/build_data.py`, `static/js/main.js`, and `index.html`.
+- **All experimental numbers come from the final paper** (Table 1 for 25 benchmarks,
+  Table 13, and the four-benchmark gap-filling figure), transcribed into `scripts/build_data.py`, `static/js/main.js`, and `index.html`.
 - **ECDF explorer.** Item-level difficulties are min-max normalized IRT `b_mean` estimates from the
   release's Difficulty Artifact (`data/benchmarks/<benchmark>/difficulty.csv`). `build_data.py`
   bundles a benchmark's items only if the recomputed DDM (same-size uniform reference at bin
@@ -68,6 +68,9 @@ cd benchfill-website && python3 -m http.server 8000   # http://localhost:8000/
 - **Figures.** Figures 1 and 2 are cropped at 432 dpi from the vector paper PDF; Figure 4
   (`Fig/search.pdf`) and the four-benchmark gap-filling figure (`Fig/ecdf_paper.pdf`) are rendered
   from the paper's own figure files. `scripts/extract_figures.py` does both.
+- **Results focus.** The page highlights the four released gap-filled benchmarks: AIME24, AIME25,
+  AIME26, and AMC23, followed by representative generated items. The eight-benchmark Table 2
+  comparison is not displayed.
 - **Augmented benchmark table.** Counts of original (`-origin-`) and generated (`-fill-`) items in
   the release's `data/filled_benchs/*.json`.
 
