@@ -88,7 +88,13 @@
 
 <main class="wrap" id="main">
 
-<p class="lead">Across <b>25 widely used benchmarks</b>, we find two recurring problems: <b>difficulty distributions that can distort model comparisons</b>, and <b>coverage gaps that can hide training progress</b>. These can lead to underestimated improvements, prematurely discarded runs, and misallocated compute.</p>
+<div class="lead">
+  <p>Our analysis of <b>25 widely used benchmarks</b> reveals two widespread problems:</p>
+  <ol>
+    <li><b>Measure mismatch.</b> A benchmark's difficulty distribution differs from the intended target distribution, which can distort model comparisons.</li>
+    <li><b>Coverage gaps.</b> Some difficulty regions contain no benchmark questions, so training improvements in those regions can go undetected.</li>
+  </ol>
+</div>
 
 <section class="f1-interactive wide" id="figure1-interactive" aria-labelledby="f1-heading" hidden>
   <div class="f1-heading"><div><p class="f1-eyebrow">Interactive intuition</p><h2 id="f1-heading">What does your benchmark actually see?</h2></div><button type="button" id="f1-reset">Reset both ↺</button></div>
