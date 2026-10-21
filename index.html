@@ -9,21 +9,21 @@
 <meta name="keywords" content="LLM evaluation, benchmark, item difficulty, item response theory, Wasserstein distance, coverage gap, benchmark difficulty measure">
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#ffffff">
-<link rel="canonical" href="https://naicheng-yu.github.io/Benchfill-Website/">
+<link rel="canonical" href="https://benchmark-difficulty-measure.github.io/">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Benchmark Difficulty Measure">
 <meta property="og:title" content="Your Benchmark Is an Empirical Measure Over Difficulty">
 <meta property="og:description" content="Measure mismatch and coverage gaps: two failure modes of benchmark evaluation, a diagnosis of 25 LLM benchmarks, and difficulty-targeted gap filling.">
-<meta property="og:url" content="https://naicheng-yu.github.io/Benchfill-Website/">
-<meta property="og:image" content="https://naicheng-yu.github.io/Benchfill-Website/static/images/og-image.png">
+<meta property="og:url" content="https://benchmark-difficulty-measure.github.io/">
+<meta property="og:image" content="https://benchmark-difficulty-measure.github.io/static/images/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Two benchmark failure cases: measure mismatch and coverage gaps.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Your Benchmark Is an Empirical Measure Over Difficulty">
 <meta name="twitter:description" content="Measure mismatch and coverage gaps: two failure modes of benchmark evaluation, a diagnosis of 25 LLM benchmarks, and difficulty-targeted gap filling.">
-<meta name="twitter:image" content="https://naicheng-yu.github.io/Benchfill-Website/static/images/og-image.png">
+<meta name="twitter:image" content="https://benchmark-difficulty-measure.github.io/static/images/og-image.png">
 
 <link rel="icon" href="./static/images/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="./static/images/favicon-32.png" type="image/png" sizes="32x32">
@@ -34,12 +34,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Noto+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
 <link rel="stylesheet" href="./static/css/style.css">
+<link rel="stylesheet" href="./static/css/figure1.css">
 
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"></script>
 <script defer src="./static/data/benchmarks.js"></script>
 <script defer src="./static/js/main.js"></script>
 <script defer src="./static/js/charts.js"></script>
+<script defer src="./static/js/figure1.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -87,6 +89,32 @@
 <main class="wrap" id="main">
 
 <p class="lead">Benchmark evaluation looks simple: run models on a set of questions and average the results. But the conclusion depends not only on how well models perform, but also on <em>how the benchmark's questions are distributed</em>. Does a benchmark faithfully measure the model differences and training improvements we actually care about?</p>
+
+<section class="f1-interactive wide" id="figure1-interactive" aria-labelledby="f1-heading" hidden>
+  <div class="f1-heading"><div><p class="f1-eyebrow">Figure 1 · Interactive intuition</p><h2 id="f1-heading">What does your benchmark actually see?</h2></div><button type="button" id="f1-reset">Reset both ↺</button></div>
+  <div class="f1-panels">
+    <article class="f1-panel f1-mismatch" aria-labelledby="f1-mismatch-title">
+      <h3 id="f1-mismatch-title"><span>(a)</span> Measure mismatch</h3>
+      <p class="f1-explanation">Keep the models fixed. Move the benchmark toward harder questions to reveal a larger model difference.</p>
+      <div class="f1-legend"><span><i class="f1-key f1-blue"></i>Model A</span><span><i class="f1-key f1-orange"></i>Model B</span></div>
+      <svg id="f1-mismatch-chart" role="img" aria-label="Fixed model performance curves above changing benchmark and fixed target difficulty distributions"></svg>
+      <div class="f1-control"><label for="f1-emphasis">Benchmark difficulty emphasis <output id="f1-emphasis-value" for="f1-emphasis">0.24</output></label><input type="range" id="f1-emphasis" min="15" max="85" value="24" step="1"><div class="f1-range-labels"><span>Easier</span><span>Harder</span></div></div>
+      <div class="f1-score-pair" aria-live="polite" aria-atomic="true"><div><span>Benchmark scores</span><p id="f1-benchmark-scores"></p><strong id="f1-benchmark-gap"></strong></div><div><span>Target scores</span><p id="f1-target-scores"></p><strong id="f1-target-gap"></strong></div></div>
+      <p class="f1-takeaway" id="f1-mismatch-takeaway"></p>
+    </article>
+    <article class="f1-panel f1-coverage" aria-labelledby="f1-coverage-title">
+      <h3 id="f1-coverage-title"><span>(b)</span> Coverage gaps</h3>
+      <p class="f1-explanation">Move a local improvement along the difficulty axis. Inside an empty interval, the benchmark cannot see it.</p>
+      <div class="f1-legend"><span><i class="f1-key f1-gray"></i>Before training</span><span><i class="f1-key f1-blue"></i>After training</span></div>
+      <svg id="f1-coverage-chart" role="img" aria-label="Training improvement curves above benchmark items and an empty difficulty interval"></svg>
+      <div class="f1-control"><label for="f1-progress">Center of local improvement <output id="f1-progress-value" for="f1-progress">0.65</output></label><input type="range" id="f1-progress" min="12" max="88" value="65" step="1"><div class="f1-range-labels"><span>Easier</span><span>Harder</span></div></div>
+      <div class="f1-score-pair" aria-live="polite" aria-atomic="true"><div><span>Observed benchmark gain</span><p id="f1-training-scores"></p><strong id="f1-observed-gain"></strong></div><div><span>Uniform-difficulty gain</span><p id="f1-uniform-scores"></p><strong id="f1-uniform-gain"></strong></div></div>
+      <label class="f1-probe"><input type="checkbox" id="f1-add-probe">Add one benchmark item at the improvement peak</label>
+      <p class="f1-takeaway" id="f1-coverage-takeaway"></p>
+    </article>
+  </div>
+  <p class="f1-note"><b>Illustrative simulation, not experimental results.</b> Curves and item locations are synthetic; every displayed score is computed from them. The target in (a) stays fixed. In (b), uniform-difficulty gain averages the improvement over [0, 1]; adding one item is an illustration, not a BenchFill run. The original paper figure is preserved below.</p>
+</section>
 
 <figure class="teaser-figure wide">
   <a class="zoomable" href="./static/images/fig1_teaser.png" data-caption="Figure 1: Two benchmark failure cases.">
@@ -324,7 +352,7 @@
       <caption class="sr-only">Augmented benchmark release: number of original, generated, and final questions.</caption>
       <thead><tr><th scope="col">Benchmark</th><th scope="col" class="num">Original</th><th scope="col" class="num">Generated</th><th scope="col" class="num">Final</th></tr></thead>
       <tbody>
-        <tr><td>AIME24</td><td class="num">30</td><td class="num">21</td><td class="num">51</td></tr>
+        <tr><td>AIME24</td><td class="num">30</td><td class="num">20</td><td class="num">50</td></tr>
         <tr><td>AIME25</td><td class="num">30</td><td class="num">22</td><td class="num">52</td></tr>
         <tr><td>AIME26</td><td class="num">30</td><td class="num">23</td><td class="num">53</td></tr>
         <tr><td>AMC23</td><td class="num">40</td><td class="num">40</td><td class="num">80</td></tr>
