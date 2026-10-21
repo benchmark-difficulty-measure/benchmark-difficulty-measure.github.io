@@ -121,7 +121,9 @@ figcaption b { color: var(--ink-2); }
 .benchmark-measure p:last-child { margin-bottom: 0; font-size: .97rem; }
 .benchmark-measure .def-label { color: var(--accent); font-size: 1.12rem; text-transform: none; letter-spacing: 0; margin-bottom: 8px !important; }
 .benchmark-measure .eq-block { font-size: 1.25rem; }
-.measure-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.measure-grid { display: grid; grid-template-columns: minmax(0, 1fr) 40px minmax(0, 1fr); gap: 16px 12px; }
+.measure-arrow { display: flex; align-items: center; justify-content: center; color: var(--accent); }
+.measure-arrow svg { display: block; }
 .measure-grid .def { min-width: 0; padding: 18px; border: 1px solid var(--line); border-radius: var(--radius); }
 .measure-grid .def p { font-size: .92rem; }
 .measure-grid .def p:last-child { margin-bottom: 0; }
@@ -301,6 +303,8 @@ mark, .hl { background: var(--hl); color: inherit; border-radius: 3px; padding: 
 }
 @media (max-width: 720px) {
   .benchmark-measure, .measure-grid { grid-template-columns: 1fr; }
+  .measure-arrow { height: 28px; }
+  .measure-arrow svg { transform: rotate(90deg); }
   .benchmark-measure { gap: 4px; padding: 18px; }
   .benchmark-measure .eq-block { font-size: 1.12rem; }
   body { font-size: 16px; }

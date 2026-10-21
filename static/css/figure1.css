@@ -30,9 +30,14 @@
 .f1-score-pair span { display: block; font-size: .73rem; color: var(--muted); line-height: 1.4; }
 .f1-score-pair p { color: var(--ink-2); margin: 5px 0 1px; font-size: .82rem; font-variant-numeric: tabular-nums; }
 .f1-score-pair strong { display: block; color: var(--accent); font-size: 1.1rem; font-variant-numeric: tabular-nums; }
-.f1-score-pair .f1-verdict { display: inline-block; margin-top: 7px; padding: 3px 9px; border-radius: 99px; color: #8b4b12; background: #fff0dd; font-size: .8rem; font-weight: 700; }
-.f1-score-pair .f1-verdict.is-close { color: #2457a5; background: #e6eefc; }
-.f1-threshold { margin: 0; font-size: .73rem; line-height: 1.5; color: var(--muted); }
+.f1-comparison { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; margin: -2px 0 14px; font-size: .8rem; color: var(--muted); }
+.f1-verdict { display: inline-block; padding: 4px 12px; border-radius: 99px; color: #8b4b12; background: #fff0dd; font-size: .85rem; font-weight: 700; }
+.f1-verdict.is-close { color: #2457a5; background: #e6eefc; }
+.f1-score-pair > .is-missed { background: #fff0dd; box-shadow: inset 0 0 0 2px #d9822b; }
+.f1-score-pair > .is-missed strong { color: #9b420b; font-size: 1.3rem; }
+.f1-score-pair .f1-missed { margin-top: 5px; color: #9b420b; font-size: .8rem; font-weight: 700; }
+.f1-score-pair .f1-missed[hidden] { display: none; }
+.f1-takeaway.is-missed { color: #8b4b12; font-weight: 600; }
 .f1-takeaway { margin: 12px 0 0; font-size: .85rem; line-height: 1.5; color: var(--ink-2); }
 .f1-probe { display: flex; align-items: flex-start; gap: 8px; font-size: .78rem; line-height: 1.5; color: var(--ink-2); cursor: pointer; }
 .f1-probe input { flex: none; accent-color: var(--gap); margin: 2px 0 0; width: 15px; height: 15px; }
