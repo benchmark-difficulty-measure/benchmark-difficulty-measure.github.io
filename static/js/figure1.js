@@ -10,7 +10,13 @@
   var before = function (z) { return 0.84 - 0.60 * z; };
   var halfWidth = 0.11;
   var closeThreshold = 0.05;
-  function scoreVerdict(a, b) { return Math.abs(b - a) < closeThreshold ? "Close!" : "Not close!"; }
+  function gapVerdict(result) {
+    var benchmarkGap = result.b - result.a, targetGap = result.targetB - result.targetA;
+    return Math.abs(benchmarkGap - targetGap) < closeThreshold ? "Close!" : "Not close!";
+  }
+  function isMissedProgress(observedGain, referenceGain) {
+    return referenceGain > 0 && Math.abs(observedGain) * 100 < 0.005;
+  }
   function improvement(z, center) {
     var distance = Math.abs(z - center) / halfWidth;
     return distance >= 1 ? 0 : 0.22 * Math.pow(Math.cos(distance * Math.PI / 2), 2);
@@ -43,7 +49,7 @@
     return { items: items, before: mean(items.map(before)), after: mean(items.map(function (z) { return before(z) + improvement(z, center); })), uniformBefore: uniformBefore, uniformAfter: uniformAfter };
   }
   // Export only the pure simulation for reproducible numeric checks in Node.
-  if (typeof module !== "undefined" && module.exports) module.exports = { mismatch: mismatch, coverage: coverage, improvement: improvement, before: before, modelA: modelA, modelB: modelB, scoreVerdict: scoreVerdict };
+  if (typeof module !== "undefined" && module.exports) module.exports = { mismatch: mismatch, coverage: coverage, improvement: improvement, before: before, modelA: modelA, modelB: modelB, gapVerdict: gapVerdict, isMissedProgress: isMissedProgress };
   if (typeof document === "undefined") return;
   var root = document.getElementById("figure1-interactive");
   if (!root) return;
@@ -96,14 +102,8 @@
   }
   var scores = function (a, b, labels) { return labels[0] + " " + (100 * a).toFixed(1) + " · " + labels[1] + " " + (100 * b).toFixed(1); };
   var pp = function (v) { return (v * 100).toFixed(2) + " pp"; };
-  function showVerdict(id, a, b) {
-    var badge = $(id), verdict = scoreVerdict(a, b);
-    badge.textContent = verdict;
-    badge.classList.toggle("is-close", verdict === "Close!");
-  }
   function drawMismatch() {
-    var alignment = Number($("f1-emphasis").value) / 100;
-    var center = 0.24 + 0.52 * alignment;
+    var center = Number($("f1-emphasis").value) / 100;
     var result = mismatch(center), svg = $("f1-mismatch-chart");
     var f = chartFrame(svg, "Measure mismatch: fixed models, changing benchmark difficulty weights");
     curve(svg, f, modelA, color.blue);
@@ -112,19 +112,20 @@
     histogram(svg, f, result.items, 247, color.blue);
     text(svg, f.sx(0), 271, "Fixed target distribution", { fill: color.orange });
     histogram(svg, f, result.target, 320, color.orange);
-    $("f1-emphasis-value").textContent = Math.round(alignment * 100) + "%";
-    $("f1-emphasis").setAttribute("aria-valuetext", Math.round(alignment * 100) + "% of the way to the target distribution");
+    $("f1-emphasis-value").textContent = center.toFixed(2);
+    $("f1-emphasis").setAttribute("aria-valuetext", "Difficulty emphasis " + center.toFixed(2));
     $("f1-benchmark-scores").textContent = scores(result.a, result.b, ["A", "B"]);
     $("f1-target-scores").textContent = scores(result.targetA, result.targetB, ["A", "B"]);
     $("f1-benchmark-gap").textContent = "Gap " + pp(result.b - result.a);
     $("f1-target-gap").textContent = "Gap " + pp(result.targetB - result.targetA);
-    showVerdict("f1-benchmark-verdict", result.a, result.b);
-    showVerdict("f1-target-verdict", result.targetA, result.targetB);
-    $("f1-mismatch-takeaway").textContent = alignment < 0.01
-      ? "The benchmark and target weight difficulty differently. The benchmark makes the models look close, while the target reveals a clear difference."
-      : alignment < 1
-        ? "The benchmark distribution is moving closer to the target. Its observed model gap becomes more faithful to the target comparison. The models stay fixed."
-        : "The benchmark distribution now matches the target, so both report the same model difference. The model curves have not changed. Only the evaluation weights have.";
+    var verdict = gapVerdict(result);
+    $("f1-gap-verdict").textContent = verdict;
+    $("f1-gap-verdict").classList.toggle("is-close", verdict === "Close!");
+    $("f1-mismatch-takeaway").textContent = Math.abs(center - 0.76) < 1e-9
+      ? "The benchmark distribution matches the target, so both report the same model gap. The model curves have not changed. Only the evaluation weights have."
+      : verdict === "Close!"
+        ? "The benchmark's model gap is close to the target gap. The model curves stay fixed; only the evaluation weights change."
+        : "The benchmark understates the model gap compared with the target. The models stay fixed, but the difficulty distribution changes the comparison.";
     svg.setAttribute("aria-label", "Illustrative model gap: benchmark " + pp(result.b - result.a) + ", fixed target " + pp(result.targetB - result.targetA));
   }
   function drawCoverage() {
@@ -158,11 +159,17 @@
     $("f1-uniform-scores").textContent = scores(result.uniformBefore, result.uniformAfter, ["Before", "after"]);
     $("f1-observed-gain").textContent = "+" + pp(result.after - result.before);
     $("f1-uniform-gain").textContent = "+" + pp(result.uniformAfter - result.uniformBefore);
+    var missed = isMissedProgress(result.after - result.before, result.uniformAfter - result.uniformBefore);
+    $("f1-observed-card").classList.toggle("is-missed", missed);
+    $("f1-missed-progress").hidden = !missed;
+    $("f1-coverage-takeaway").classList.toggle("is-missed", missed);
     $("f1-coverage-takeaway").textContent = probe
       ? "The added item samples the improvement peak. Before and after scores are both computed on this augmented benchmark."
       : result.after - result.before < 1e-9
-        ? "The model improves inside the empty interval, but the benchmark reports exactly zero progress."
-        : "The improvement overlaps existing questions, so some of the training progress becomes visible to the benchmark.";
+        ? "The model improves where the benchmark has no questions, so the benchmark misses the progress entirely."
+        : missed
+          ? "The model improves, but the benchmark reports almost no gain."
+          : "The improvement overlaps existing questions, so some of the training progress becomes visible to the benchmark.";
     svg.setAttribute("aria-label", "Illustrative training gain: observed " + pp(result.after - result.before) + ", uniform difficulty " + pp(result.uniformAfter - result.uniformBefore) + (probe ? ", with one added probe item" : ""));
   }
   root.hidden = false;
@@ -171,7 +178,7 @@
   $("f1-progress").addEventListener("input", drawCoverage);
   $("f1-add-probe").addEventListener("change", drawCoverage);
   $("f1-reset").addEventListener("click", function () {
-    $("f1-emphasis").value = "0"; $("f1-progress").value = "65"; $("f1-add-probe").checked = false;
+    $("f1-emphasis").value = "24"; $("f1-progress").value = "65"; $("f1-add-probe").checked = false;
     drawMismatch(); drawCoverage();
   });
   var oldWidth = 0;
