@@ -1,11 +1,16 @@
 const assert = require('node:assert/strict');
 const sim = require('../static/js/figure1.js');
 const mismatched = sim.mismatch(.24), aligned = sim.mismatch(.76);
-assert.equal(sim.scoreVerdict(mismatched.a, mismatched.b), 'Close!', 'Mismatched benchmark should make the two models look close');
-assert.equal(sim.scoreVerdict(mismatched.targetA, mismatched.targetB), 'Not close!', 'The target should expose the model difference');
-assert.equal(sim.scoreVerdict(0, .0499), 'Close!');
-assert.equal(sim.scoreVerdict(0, .05), 'Not close!', 'The threshold is strictly below 5 pp');
-assert.equal(sim.scoreVerdict(.06, 0), 'Not close!', 'The verdict must use the absolute model gap');
+assert.equal(sim.gapVerdict(mismatched), 'Not close!', 'Compare the benchmark gap with the target gap');
+assert.equal(sim.gapVerdict(aligned), 'Close!', 'Matching distributions must give matching gaps even when the two models differ');
+assert.equal(sim.gapVerdict({a: 0, b: .2, targetA: 0, targetB: .2}), 'Close!');
+assert.equal(sim.gapVerdict({a: 0, b: 0, targetA: 0, targetB: .0499}), 'Close!');
+assert.equal(sim.gapVerdict({a: 0, b: 0, targetA: 0, targetB: .05}), 'Not close!');
+assert.equal(sim.gapVerdict({a: 0, b: .06, targetA: 0, targetB: 0}), 'Not close!');
+assert(sim.isMissedProgress(0, .0242), 'Highlight invisible positive progress');
+assert(sim.isMissedProgress(.00004, .0242), 'Highlight gains that round to +0.00 pp');
+assert(!sim.isMissedProgress(.00006, .0242), 'Do not flag a displayed nonzero gain as zero');
+assert(!sim.isMissedProgress(0, 0), 'No progress exists to miss when both gains are zero');
 assert.equal(mismatched.targetA, aligned.targetA, 'Target scores must stay fixed');
 assert.equal(mismatched.targetB, aligned.targetB, 'Target scores must stay fixed');
 assert.equal(aligned.a, aligned.targetA, 'Matching distributions must reproduce model A target score');
@@ -31,4 +36,4 @@ for (let center = .12; center <= .88001; center += .01) {
     assert(p >= 0 && p <= 1, 'Performance curves must be probabilities');
   }
 }
-console.log('PASS: fixed target, convergence to target, close-score threshold, invisible improvement, analytic uniform gain, probe effect, valid probabilities.');
+console.log('PASS: fixed target, convergence to target, benchmark-versus-target gap verdict, missed-progress highlighting, invisible improvement, analytic uniform gain, probe effect, valid probabilities.');
