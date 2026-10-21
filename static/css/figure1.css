@@ -26,6 +26,7 @@
 .f1-control input { display: block; width: 100%; margin: 8px 0 0; height: 24px; cursor: pointer; accent-color: var(--accent); }
 .f1-range-labels { display: flex; justify-content: space-between; color: var(--muted); font-size: .73rem; }
 .f1-score-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0 12px; }
+.f1-score-single { grid-template-columns: 1fr; }
 .f1-score-pair > div { background: var(--card); padding: 10px 12px; border-radius: 7px; min-width: 0; }
 .f1-score-pair span { display: block; font-size: .73rem; color: var(--muted); line-height: 1.4; }
 .f1-score-pair p { color: var(--ink-2); margin: 5px 0 1px; font-size: .82rem; font-variant-numeric: tabular-nums; }
