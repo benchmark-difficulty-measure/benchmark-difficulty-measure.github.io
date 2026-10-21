@@ -4,12 +4,13 @@ const mismatched = sim.mismatch(.24), aligned = sim.mismatch(.76);
 assert.equal(sim.gapVerdict(mismatched), 'Not close!', 'Compare the benchmark gap with the target gap');
 assert.equal(sim.gapVerdict(aligned), 'Close!', 'Matching distributions must give matching gaps even when the two models differ');
 assert.equal(sim.gapVerdict({a: 0, b: .2, targetA: 0, targetB: .2}), 'Close!');
-assert.equal(sim.gapVerdict({a: 0, b: 0, targetA: 0, targetB: .0499}), 'Close!');
-assert.equal(sim.gapVerdict({a: 0, b: 0, targetA: 0, targetB: .05}), 'Not close!');
+assert.equal(sim.gapVerdict({a: 0, b: 0, targetA: 0, targetB: .0299}), 'Close!');
+assert.equal(sim.gapVerdict({a: 0, b: 0, targetA: 0, targetB: .03}), 'Close!');
+assert.equal(sim.gapVerdict({a: 0, b: 0, targetA: 0, targetB: .0301}), 'Not close!');
 assert.equal(sim.gapVerdict({a: 0, b: .06, targetA: 0, targetB: 0}), 'Not close!');
-assert(sim.isMissedProgress(0, .0242), 'Highlight invisible positive progress');
-assert(sim.isMissedProgress(.00004, .0242), 'Highlight gains that round to +0.00 pp');
-assert(!sim.isMissedProgress(.00006, .0242), 'Do not flag a displayed nonzero gain as zero');
+assert(sim.isMissedProgress(0, .22), 'Highlight invisible positive progress');
+assert(sim.isMissedProgress(.00004, .22), 'Highlight gains that round to +0.00 pp');
+assert(!sim.isMissedProgress(.00006, .22), 'Do not flag a displayed nonzero gain as zero');
 assert(!sim.isMissedProgress(0, 0), 'No progress exists to miss when both gains are zero');
 assert.equal(mismatched.targetA, aligned.targetA, 'Target scores must stay fixed');
 assert.equal(mismatched.targetB, aligned.targetB, 'Target scores must stay fixed');
@@ -27,7 +28,7 @@ for (let alignment = 0; alignment <= 100; alignment++) {
 assert(lastDistance < 1e-12 && lastError < 1e-12);
 const hidden = sim.coverage(.65, false), visible = sim.coverage(.65, true);
 assert.equal(hidden.before, hidden.after, 'An unsampled local improvement must be invisible');
-assert(Math.abs(hidden.uniformAfter-hidden.uniformBefore-.0242)<1e-7, 'Uniform gain must agree with the integral of the raised cosine bump');
+assert.equal(sim.improvement(.65, .65), .22, 'The model improves locally even while the benchmark gain stays zero');
 assert(Math.abs((visible.after-visible.before)-.22/11)<1e-12, 'The probe should contribute one item of peak gain to an 11-item benchmark');
 assert(sim.coverage(.31, false).after > sim.coverage(.31, false).before, 'Improvement at a sampled item must be observable');
 for (let center = .12; center <= .88001; center += .01) {
@@ -36,4 +37,4 @@ for (let center = .12; center <= .88001; center += .01) {
     assert(p >= 0 && p <= 1, 'Performance curves must be probabilities');
   }
 }
-console.log('PASS: fixed target, convergence to target, benchmark-versus-target gap verdict, missed-progress highlighting, invisible improvement, analytic uniform gain, probe effect, valid probabilities.');
+console.log('PASS: fixed target, convergence to target, 3 pp gap verdict, missed-progress highlighting, invisible local improvement, probe effect, valid probabilities.');
