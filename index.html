@@ -33,15 +33,15 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Noto+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
-<link rel="stylesheet" href="./static/css/style.css?v=06be2650">
-<link rel="stylesheet" href="./static/css/figure1.css?v=00630aaf">
+<link rel="stylesheet" href="./static/css/style.css?v=ee880205">
+<link rel="stylesheet" href="./static/css/figure1.css?v=0874be70">
 
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"></script>
 <script defer src="./static/data/benchmarks.js"></script>
 <script defer src="./static/js/main.js?v=9c3225e2"></script>
 <script defer src="./static/js/charts.js?v=9f85dc39"></script>
-<script defer src="./static/js/figure1.js?v=40a73404"></script>
+<script defer src="./static/js/figure1.js?v=1a4026a5"></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -88,28 +88,28 @@
 
 <main class="wrap" id="main">
 
-<p class="lead">Benchmark evaluation looks simple: run models on a set of questions and average the results. But the conclusion depends not only on how well models perform, but also on <em>how the benchmark's questions are distributed</em>. Does a benchmark faithfully measure the model differences and training improvements we actually care about?</p>
+<p class="lead">Across <b>25 widely used benchmarks</b>, we find two recurring problems: <b>difficulty distributions that can distort model comparisons</b>, and <b>coverage gaps that can hide training progress</b>. These can lead to underestimated improvements, prematurely discarded runs, and misallocated compute.</p>
 
 <section class="f1-interactive wide" id="figure1-interactive" aria-labelledby="f1-heading" hidden>
   <div class="f1-heading"><div><p class="f1-eyebrow">Interactive intuition</p><h2 id="f1-heading">What does your benchmark actually see?</h2></div><button type="button" id="f1-reset">Reset both ↺</button></div>
   <div class="f1-panels">
     <article class="f1-panel f1-mismatch" aria-labelledby="f1-mismatch-title">
       <h3 id="f1-mismatch-title"><span>(a)</span> Measure mismatch</h3>
-      <p class="f1-explanation">Keep the models fixed. Move the benchmark distribution closer to the target distribution to better reflect the model difference of interest.</p>
+      <p class="f1-explanation">Keep the models fixed. Move the benchmark distribution toward the target and compare the resulting score gaps.</p>
       <div class="f1-legend"><span><i class="f1-key f1-blue"></i>Model A</span><span><i class="f1-key f1-orange"></i>Model B</span></div>
       <svg id="f1-mismatch-chart" role="img" aria-label="Fixed model performance curves above changing benchmark and fixed target difficulty distributions"></svg>
-      <div class="f1-control"><label for="f1-emphasis">Alignment with target <output id="f1-emphasis-value" for="f1-emphasis">0%</output></label><input type="range" id="f1-emphasis" min="0" max="100" value="0" step="1"><div class="f1-range-labels"><span>Mismatched</span><span>Matches target</span></div></div>
-      <div class="f1-score-pair" aria-live="polite" aria-atomic="true"><div><span>Benchmark scores</span><p id="f1-benchmark-scores"></p><strong id="f1-benchmark-gap"></strong><span class="f1-verdict" id="f1-benchmark-verdict"></span></div><div><span>Target scores</span><p id="f1-target-scores"></p><strong id="f1-target-gap"></strong><span class="f1-verdict" id="f1-target-verdict"></span></div></div>
-      <p class="f1-threshold">For this illustration, “Close!” means the two models differ by less than 5 percentage points. This is not a statistical significance test.</p>
+      <div class="f1-control"><label for="f1-emphasis">Benchmark difficulty emphasis <output id="f1-emphasis-value" for="f1-emphasis">0.24</output></label><input type="range" id="f1-emphasis" min="15" max="85" value="24" step="1"><div class="f1-range-labels"><span>Easier</span><span>Harder</span></div></div>
+      <div class="f1-score-pair" aria-live="polite" aria-atomic="true"><div><span>Benchmark scores</span><p id="f1-benchmark-scores"></p><strong id="f1-benchmark-gap"></strong></div><div><span>Target scores</span><p id="f1-target-scores"></p><strong id="f1-target-gap"></strong></div></div>
+      <div class="f1-comparison" aria-live="polite" aria-atomic="true"><span>Benchmark gap vs. target gap</span><strong class="f1-verdict" id="f1-gap-verdict"></strong></div>
       <p class="f1-takeaway" id="f1-mismatch-takeaway"></p>
     </article>
     <article class="f1-panel f1-coverage" aria-labelledby="f1-coverage-title">
       <h3 id="f1-coverage-title"><span>(b)</span> Coverage gaps</h3>
-      <p class="f1-explanation">Move a local improvement along the difficulty axis. Inside an empty interval, the benchmark cannot see it.</p>
+      <p class="f1-explanation">Move a local improvement along the difficulty axis. A coverage gap can hide it from the benchmark.</p>
       <div class="f1-legend"><span><i class="f1-key f1-gray"></i>Before training</span><span><i class="f1-key f1-blue"></i>After training</span></div>
-      <svg id="f1-coverage-chart" role="img" aria-label="Training improvement curves above benchmark items and an empty difficulty interval"></svg>
+      <svg id="f1-coverage-chart" role="img" aria-label="Training improvement curves above benchmark items and a coverage gap"></svg>
       <div class="f1-control"><label for="f1-progress">Center of local improvement <output id="f1-progress-value" for="f1-progress">0.65</output></label><input type="range" id="f1-progress" min="12" max="88" value="65" step="1"><div class="f1-range-labels"><span>Easier</span><span>Harder</span></div></div>
-      <div class="f1-score-pair" aria-live="polite" aria-atomic="true"><div><span>Observed benchmark gain</span><p id="f1-training-scores"></p><strong id="f1-observed-gain"></strong></div><div><span>Uniform-difficulty gain</span><p id="f1-uniform-scores"></p><strong id="f1-uniform-gain"></strong></div></div>
+      <div class="f1-score-pair" aria-live="polite" aria-atomic="true"><div id="f1-observed-card"><span>Observed benchmark gain</span><p id="f1-training-scores"></p><strong id="f1-observed-gain"></strong><span class="f1-missed" id="f1-missed-progress" hidden>Missed progress</span></div><div><span>Uniform-difficulty gain</span><p id="f1-uniform-scores"></p><strong id="f1-uniform-gain"></strong></div></div>
       <label class="f1-probe"><input type="checkbox" id="f1-add-probe">Add one benchmark item at the improvement peak</label>
       <p class="f1-takeaway" id="f1-coverage-takeaway"></p>
     </article>
@@ -149,6 +149,7 @@
       <div class="eq-block">\[s_\theta(z)\]</div>
       <p>The expected performance of model \(\theta\) on items of difficulty \(z\), such as pass@1.</p>
     </article>
+    <div class="measure-arrow" aria-hidden="true"><svg viewBox="0 0 40 24" width="40" height="24"><path d="M3 12H35M27 4L35 12L27 20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     <article class="def measure-integral">
       <p class="def-label">Benchmark score</p>
       <div class="eq-block">\[\begin{aligned}S_B(\theta)&=\int s_\theta(z)\,d\nu_B(z)\\&=\frac1n\sum_{i=1}^n s_\theta(z_i)\end{aligned}\]</div>
@@ -159,6 +160,7 @@
       <div class="eq-block">\[\Delta(z)=s_{\theta'}(z)-s_\theta(z)\]</div>
       <p>The difference between two models at the same difficulty.</p>
     </article>
+    <div class="measure-arrow" aria-hidden="true"><svg viewBox="0 0 40 24" width="40" height="24"><path d="M3 12H35M27 4L35 12L27 20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     <article class="def measure-integral">
       <p class="def-label">Benchmark score difference</p>
       <div class="eq-block">\[\begin{aligned}D_B(\theta',\theta)&=\int\Delta(z)\,d\nu_B(z)\\&=S_B(\theta')-S_B(\theta)\end{aligned}\]</div>
@@ -170,8 +172,8 @@
   <div class="metric-cards">
     <div class="metric-card mismatch">
       <p class="metric-name">Difficulty Distribution Mismatch</p>
-      <p>A target distribution \(\mu\) over difficulty specifies the intended evaluation objective.</p>
       <div class="eq-block">\[\mathrm{DDM}(B;\mu):=W_1(\nu_B,\mu)\]</div>
+      <p>Here, \(\mu\) is the target distribution over difficulty, specifying the intended evaluation objective.</p>
       <p>The 1-Wasserstein distance measures how much mass must be moved, and how far, to turn the benchmark's difficulty distribution into the target one.</p>
       <p>The target model difference is \(D_\mu(\theta',\theta)=\int\Delta(z)\,d\mu(z)\).</p>
     </div>
@@ -343,7 +345,6 @@
       </div>
     </article>
   </div>
-  <p class="small-note">Item text as shown in the paper's Table 13. All 24 gap-filling items, with answers, parents, targets, and annotated difficulties, are in <a href="https://github.com/ASTRAL-Group/benchmark-difficulty-measure/blob/main/new_item_records.csv" target="_blank" rel="noopener"><code>new_item_records.csv</code></a> in the <a href="https://github.com/ASTRAL-Group/benchmark-difficulty-measure" target="_blank" rel="noopener">code release</a>.</p>
 </section>
 
 <!-- ============================== BIBTEX ============================== -->
