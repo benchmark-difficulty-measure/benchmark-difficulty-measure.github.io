@@ -18,23 +18,6 @@
 
   /* ---------------- paper tables ---------------- */
 
-  // Paper Table 2 (gap filling): Top-3 Gap Sum Reduction (%) and Target Dev.
-  var TABLE2 = [
-    ["AIME24", 6.90, 35.57, 35.57, 0.057, 0.005],
-    ["AIME25", 27.44, 37.56, 37.56, 0.016, 0.005],
-    ["AIME26", 17.94, 33.04, 33.04, 0.045, 0.002],
-    ["AMC23", 24.47, 35.19, 35.78, 0.009, 0.003],
-    ["Gaokao2023en", 11.45, 38.88, 45.47, 0.152, 0.004],
-    ["BBH-3 objects", 14.83, 29.88, 32.80, 0.026, 0.006],
-    ["MMLU-Pro-Biology", 22.23, 30.13, 36.84, 0.046, 0.006],
-    ["IFEval", 14.94, 21.09, 23.44, 0.036, 0.007]
-  ].map(function (r) {
-    return { name: r[0], p: { baseline: r[1], ours: r[2], oracle: r[3], devBaseline: r[4], devOurs: r[5] } };
-  });
-  var TABLE2_AVG = { baseline: 17.52, ours: 32.67, oracle: 35.06, devBaseline: 0.048, devOurs: 0.005 };
-  window.BF.TABLE2 = TABLE2;
-  window.BF.TABLE2_AVG = TABLE2_AVG;
-
   function td(text, cls) {
     var c = document.createElement("td");
     if (cls) c.className = cls;
@@ -50,7 +33,7 @@
       if (b.domain !== lastDomain) {
         var dr = document.createElement("tr");
         dr.className = "domain-row";
-        dr.appendChild(td(b.domain)).colSpan = 6;
+        dr.appendChild(td(b.domain)).colSpan = 5;
         body.appendChild(dr);
         lastDomain = b.domain;
       }
@@ -60,7 +43,6 @@
       tr.tabIndex = 0;
       tr.setAttribute("aria-label", b.name + ": open in explorer");
       tr.appendChild(td(b.name));
-      tr.appendChild(td(b.domain));
       tr.appendChild(td(b.ddm.toFixed(3), "num" + (b.ddm >= 0.10 ? " hi" : "")));
       tr.appendChild(td(b.maxGap.toFixed(3), "num" + (b.maxGap >= 0.10 ? " hi" : "")));
       tr.appendChild(td(b.top5.toFixed(3), "num" + (b.top5 >= 0.30 ? " hi" : "")));
