@@ -34,14 +34,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Noto+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
 <link rel="stylesheet" href="./static/css/style.css?v=ee880205">
-<link rel="stylesheet" href="./static/css/figure1.css?v=a27d44a3">
+<link rel="stylesheet" href="./static/css/figure1.css?v=dbedbf1a">
 
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"></script>
 <script defer src="./static/data/benchmarks.js"></script>
 <script defer src="./static/js/main.js?v=fc02dbed"></script>
 <script defer src="./static/js/charts.js?v=9f85dc39"></script>
-<script defer src="./static/js/figure1.js?v=6c69b89f"></script>
+<script defer src="./static/js/figure1.js?v=8207e4ef"></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -97,7 +97,7 @@
 </div>
 
 <section class="f1-interactive wide" id="figure1-interactive" aria-labelledby="f1-heading" hidden>
-  <div class="f1-heading"><div><p class="f1-eyebrow">Interactive intuition</p><h2 id="f1-heading">What does your benchmark actually see?</h2></div><div class="f1-actions"><button type="button" class="f1-watch" id="f1-watch" aria-haspopup="dialog"><span aria-hidden="true">▶</span> Watch animation <span class="f1-duration">32 sec</span></button><button type="button" id="f1-reset">Reset both ↺</button></div></div>
+  <div class="f1-heading"><div><p class="f1-eyebrow">Interactive intuition</p><h2 id="f1-heading">What does your benchmark actually see?</h2></div><button type="button" id="f1-reset">Reset both ↺</button></div>
   <div class="f1-panels">
     <article class="f1-panel f1-mismatch" aria-labelledby="f1-mismatch-title">
       <h3 id="f1-mismatch-title"><span>(a)</span> Measure mismatch</h3>
@@ -122,38 +122,6 @@
   </div>
   <p class="f1-note"><b>Illustrative simulation, not experimental results.</b> Curves and item locations are synthetic; every displayed score is computed from them.</p>
 </section>
-
-<dialog class="f1-movie" id="f1-movie" aria-labelledby="f1-movie-title">
-  <div class="f1-movie-header">
-    <div><p class="f1-eyebrow">Animated explanation</p><h2 id="f1-movie-title">Two ways a benchmark can mislead</h2></div>
-    <button type="button" class="f1-movie-close" id="f1-movie-close" aria-label="Close animation">×</button>
-  </div>
-  <div class="f1-movie-chapters" role="group" aria-label="Animation chapters">
-    <button type="button" id="f1-chapter-mismatch" aria-pressed="true"><span>01</span> Measure mismatch</button>
-    <button type="button" id="f1-chapter-coverage" aria-pressed="false"><span>02</span> Coverage gaps</button>
-  </div>
-  <div class="f1-movie-caption" role="status" aria-live="polite" aria-atomic="true"><h3 id="f1-movie-scene"></h3><p id="f1-movie-description"></p></div>
-  <div class="f1-movie-stage">
-    <div class="f1-movie-plot">
-      <div class="f1-legend" id="f1-movie-legend"></div>
-      <svg id="f1-movie-chart" role="img" aria-label="Animated explanation of benchmark difficulty"></svg>
-    </div>
-    <div class="f1-movie-metrics">
-      <div id="f1-movie-comparison">
-        <div class="f1-movie-card"><span>Benchmark scores</span><p id="f1-movie-benchmark-scores"></p><strong id="f1-movie-benchmark-gap"></strong><small>model gap</small></div>
-        <div class="f1-movie-card f1-movie-target"><span>Target scores</span><p id="f1-movie-target-scores"></p><strong id="f1-movie-target-gap"></strong><small>model gap</small></div>
-        <div class="f1-movie-verdict"><span>Benchmark gap vs. target gap</span><strong class="f1-verdict" id="f1-movie-verdict"></strong></div>
-      </div>
-      <div class="f1-movie-card f1-movie-gain" id="f1-movie-gain-card" hidden><span>Observed benchmark gain</span><p id="f1-movie-training-scores"></p><strong id="f1-movie-gain"></strong><b id="f1-movie-gain-label"></b><p class="f1-movie-gain-note" id="f1-movie-gain-note"></p></div>
-    </div>
-  </div>
-  <div class="f1-movie-controls">
-    <button type="button" id="f1-movie-play">Pause</button>
-    <div class="f1-movie-timeline"><label class="sr-only" for="f1-movie-seek">Animation progress</label><input id="f1-movie-seek" type="range" min="0" max="32" value="0" step="0.1"><output id="f1-movie-time" for="f1-movie-seek">0:00 / 0:32</output></div>
-    <button type="button" class="f1-movie-explore" id="f1-movie-explore">Try the sliders</button>
-  </div>
-  <p class="f1-movie-note">Illustrative simulation with scores computed from the displayed curves and questions.</p>
-</dialog>
 
 <!-- ============================== TL;DR ============================== -->
 <section class="section" id="tldr">
