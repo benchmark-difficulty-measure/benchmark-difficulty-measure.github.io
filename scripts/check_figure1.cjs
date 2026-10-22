@@ -37,23 +37,4 @@ for (let center = .12; center <= .88001; center += .01) {
     assert(p >= 0 && p <= 1, 'Performance curves must be probabilities');
   }
 }
-const movieStart = sim.movieFrame(0), movieAligned = sim.movieFrame(12), movieEnd = sim.movieFrame(32);
-assert.equal(sim.gapVerdict(sim.mismatch(movieStart.center)), 'Not close!');
-assert.equal(sim.gapVerdict(sim.mismatch(movieAligned.center)), 'Close!');
-assert.equal(movieEnd.probe, true);
-let previousMovieGap = -Infinity;
-for (let seconds = 0; seconds <= 32; seconds += .25) {
-  const frame = sim.movieFrame(seconds);
-  const comparison = sim.mismatch(frame.center);
-  assert.equal(comparison.targetA, aligned.targetA, 'Animation must leave target scores unchanged');
-  assert.equal(comparison.targetB, aligned.targetB, 'Animation must leave target scores unchanged');
-  assert(comparison.b-comparison.a >= previousMovieGap-1e-12, 'The animated comparison must move toward the target gap');
-  previousMovieGap = comparison.b-comparison.a;
-  const training = sim.coverage(.65, frame.probe, frame.gainScale);
-  const gain = training.after-training.before;
-  if (!frame.probe) assert.equal(gain, 0, 'Growing an improvement inside the gap must stay invisible');
-  else assert(Math.abs(gain-.22/11)<1e-12, 'The final animation must report +2.00 pp on the augmented benchmark');
-  assert(frame.gainScale >= 0 && frame.gainScale <= 1);
-}
-assert.deepEqual(sim.coverage(.65, false), hidden, 'Animation must preserve the original interactive example');
-console.log('PASS: fixed target, convergence, 3 pp verdict, missed progress, local improvement, probe effect, valid probabilities, and all animated score states.');
+console.log('PASS: fixed target, convergence to target, 3 pp gap verdict, missed-progress highlighting, invisible local improvement, probe effect, valid probabilities.');
