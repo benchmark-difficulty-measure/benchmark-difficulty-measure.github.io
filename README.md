@@ -55,6 +55,11 @@ cd benchfill-website && python3 -m http.server 8000   # http://localhost:8000/
   gap, labeling them “Close!” when their difference is at most 3 percentage points. Local
   improvements that the benchmark reports as +0.00 pp are highlighted as missed progress.
   The coverage example displays only the observed benchmark gain.
+  A 32-second guided animation reuses these models and item locations. It first moves
+  the benchmark toward the target, then grows an improvement inside the coverage gap
+  and adds one probe item. Playback supports pause, replay, chapter selection, and
+  scrubbing. It starts only on request, pauses in background tabs, and opens paused
+  when reduced motion is preferred. Closing it preserves the sliders' current state.
   The static Figure 1 is not displayed.
   Run `node scripts/check_figure1.cjs` to verify the weighting and coverage examples.
 - **AIME24 release.** Updated to 20 generated items / 50 total, matching the final paper
