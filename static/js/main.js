@@ -99,10 +99,13 @@
       sections.forEach(function (entry) {
         if (entry.element.getBoundingClientRect().top <= line) active = entry;
       });
-      // The last section may never reach the activation line when scrolling stops at the page bottom.
-      if (document.documentElement.scrollHeight > window.innerHeight &&
-          window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2) {
-        active = sections[sections.length - 1];
+      // A short final section can be fully visible without ever reaching the activation line.
+      var last = sections[sections.length - 1], lastBox = last.element.getBoundingClientRect();
+      var lastFullyVisible = lastBox.top >= line && lastBox.bottom <= window.innerHeight;
+      var atBottom = document.documentElement.scrollHeight > window.innerHeight &&
+        window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
+      if (lastFullyVisible || atBottom) {
+        active = last;
       }
       activate(active);
     }
