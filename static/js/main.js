@@ -71,24 +71,57 @@
 
   function navHighlight() {
     var links = $$(".nav-links a");
-    var map = {};
-    links.forEach(function (a) { map[a.getAttribute("href").slice(1)] = a; });
-    var ids = Object.keys(map).filter(function (id) { return document.getElementById(id); });
-    if (!("IntersectionObserver" in window)) return;
-    var visible = {};
-    var obs = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) { visible[e.target.id] = e.isIntersecting; });
-      var current = null;
-      ids.forEach(function (id) { if (visible[id] && !current) current = id; });
-      if (current) {
-        links.forEach(function (a) { a.classList.remove("active"); });
-        map[current].classList.add("active");
-        var bar = $(".nav-links");
-        var a = map[current];
-        if (bar.scrollWidth > bar.clientWidth) bar.scrollTo({ left: a.offsetLeft - 20, behavior: "smooth" });
+    var sections = links.map(function (a) {
+      return { link: a, element: document.getElementById(a.getAttribute("href").slice(1)) };
+    }).filter(function (entry) { return entry.element; });
+    if (!sections.length) return;
+    var nav = $(".nav"), bar = $(".nav-links"), current = null, queued = false;
+    function activate(entry) {
+      if (current === entry) return;
+      current = entry;
+      links.forEach(function (a) {
+        var active = a === entry.link;
+        a.classList.toggle("active", active);
+        if (active) a.setAttribute("aria-current", "location");
+        else a.removeAttribute("aria-current");
+      });
+      if (bar.scrollWidth > bar.clientWidth) {
+        var linkBox = entry.link.getBoundingClientRect(), barBox = bar.getBoundingClientRect();
+        if (linkBox.left < barBox.left || linkBox.right > barBox.right) {
+          bar.scrollTo({ left: bar.scrollLeft + linkBox.left - barBox.left - 16, behavior: "smooth" });
+        }
       }
-    }, { rootMargin: "-50px 0px -65% 0px" });
-    ids.forEach(function (id) { obs.observe(document.getElementById(id)); });
+    }
+    function update() {
+      queued = false;
+      var line = nav.getBoundingClientRect().bottom + 16;
+      var active = sections[0];
+      sections.forEach(function (entry) {
+        if (entry.element.getBoundingClientRect().top <= line) active = entry;
+      });
+      // The last section may never reach the activation line when scrolling stops at the page bottom.
+      if (document.documentElement.scrollHeight > window.innerHeight &&
+          window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2) {
+        active = sections[sections.length - 1];
+      }
+      activate(active);
+    }
+    function schedule() {
+      if (queued) return;
+      queued = true;
+      window.requestAnimationFrame(update);
+    }
+    sections.forEach(function (entry) {
+      entry.link.addEventListener("click", function (event) {
+        if (!event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) activate(entry);
+      });
+    });
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    window.addEventListener("hashchange", schedule);
+    window.addEventListener("load", schedule);
+    if ("ResizeObserver" in window) new ResizeObserver(schedule).observe(document.body);
+    update();
   }
 
   function copyBibtex() {
