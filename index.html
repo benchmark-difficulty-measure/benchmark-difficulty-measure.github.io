@@ -51,9 +51,7 @@
     <a href="#tldr">Overview</a>
     <a href="#measure">Framework</a>
     <a href="#diagnosis">Findings</a>
-    <a href="#explorer">Difficulty Explorer</a>
     <a href="#benchfill">BenchFill</a>
-    <a href="#results">Results</a>
     <a href="#bibtex">Citation</a>
   </div>
 </div></nav>
@@ -120,7 +118,7 @@
       <p class="f1-takeaway" id="f1-coverage-takeaway"></p>
     </article>
   </div>
-  <p class="f1-note"><b>Illustrative simulation, not experimental results.</b> Curves and item locations are synthetic; every displayed score is computed from them. The target in (a) stays fixed.</p>
+  <p class="f1-note"><b>Illustrative simulation, not experimental results.</b> Curves and item locations are synthetic; every displayed score is computed from them.</p>
 </section>
 
 <!-- ============================== TL;DR ============================== -->
@@ -196,7 +194,7 @@
       <p>If the performance difference \(\Delta\) is \(L\)-Lipschitz, then</p>
       <div class="eq-block">\[\bigl|D_B(\theta',\theta)-D_\mu(\theta',\theta)\bigr|\le L\,W_1(\nu_B,\mu).\]</div>
       <p>Consequently, if \(|D_\mu(\theta',\theta)|>L\,W_1(\nu_B,\mu)\), then \(\operatorname{sign}D_B(\theta',\theta)=\operatorname{sign}D_\mu(\theta',\theta)\): no rank flip can occur.</p>
-      <p class="thm-note">A small DDM keeps benchmark comparisons faithful to the target distribution.</p>
+      <p class="thm-note"><span aria-hidden="true">💡</span> A small DDM keeps benchmark comparisons faithful to the target distribution.</p>
     </article>
     <article class="metric-card gap">
       <p class="metric-name"><span class="thm-num">Theorem 2.3</span>Maximum gap as an exact asymptotic minimax detection boundary</p>
@@ -205,7 +203,7 @@
         <li>If \(w\le G(B)\), then \(\Pi^*_\alpha(B;w,a,k)=\alpha\) for every \(k\in\mathbb N\).</li>
         <li>If \(w>G(B)\), then \(\lim_{k\to\infty}\Pi^*_\alpha(B;w,a,k)=1\).</li>
       </ol>
-      <p class="thm-note">An improvement no wider than the maximum gap can be invisible in the worst case, however many times the benchmark is re-run.</p>
+      <p class="thm-note"><span aria-hidden="true">💡</span> An improvement no wider than the maximum gap can be invisible in the worst case, however many times the benchmark is re-run.</p>
     </article>
   </div>
 </section>
@@ -293,6 +291,11 @@
     <li><span class="step-k">Annotate</span><p>Check candidate validity, collect model responses, and estimate the generated items&rsquo; difficulties through online IRT calibration.</p></li>
     <li><span class="step-k">Update Memory</span><p>Add annotated items to memory so subsequent generations can use better parents and difficulty references.</p></li>
   </ol>
+
+  <h3>Why BenchFill?</h3>
+  <div class="takeaway" id="why-benchfill">
+    <p>Filling difficulty gaps helps benchmarks detect localized training progress. In our SFT experiments on AIME24, AIME25, and AIME26, adding just one BenchFill item made positive gains statistically detectable in <b>3/3 cases</b>; the original benchmarks and baseline augmentations detected none (<b>0/3 each</b>).</p>
+  </div>
 </section>
 
 <!-- ============================== RESULTS ============================== -->
@@ -320,7 +323,7 @@
   <p class="small-note">Download <a href="https://huggingface.co/datasets/Yifan99/BenchFill" target="_blank" rel="noopener"><b>BenchFill Datasets on Hugging Face</b></a> or <a href="https://github.com/ASTRAL-Group/benchmark-difficulty-measure/tree/main/data/filled_benchs" target="_blank" rel="noopener"><code>data/filled_benchs</code> on GitHub</a>.</p>
 
   <h3>Representative generated items</h3>
-  <p>Each pair shows an original benchmark item (the ancestor) and the final item selected from its lineage, with the main change highlighted. Difficulties are normalized to [0,1], and the target is in parentheses. Rewrites can move difficulty in either direction.</p>
+  <p>Each pair shows an original benchmark item (the ancestor) and the final generated item, with the main change highlighted. The target difficulty is in parentheses.</p>
   <div class="examples">
     <article class="example">
       <header><span class="ex-bench">AMC23</span><span class="ex-move up">0.535 &rarr; 0.597</span></header>
