@@ -118,7 +118,7 @@
       ? "The benchmark distribution matches the target, so both report the same model gap. The model curves have not changed. Only the evaluation weights have."
       : verdict === "Close!"
         ? "The benchmark's model gap is close to the target gap. The model curves stay fixed; only the evaluation weights change."
-        : "The benchmark understates the model gap compared with the target. The models stay fixed, but the difficulty distribution changes the comparison.";
+        : "The benchmark " + (result.b - result.a > result.targetB - result.targetA ? "overstates" : "understates") + " the model gap compared with the target. The models stay fixed, but the difficulty distribution changes the comparison.";
     svg.setAttribute("aria-label", "Illustrative model gap: benchmark " + pp(result.b - result.a) + ", fixed target " + pp(result.targetB - result.targetA));
   }
   function drawCoverage() {
